@@ -23,10 +23,11 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  const { data: { session } } = await supabase.auth.getSession()
+  // Use getClaims() for secure validation
+  const claims = await supabase.auth.getClaims()
 
-  if (!session && request.nextUrl.pathname.startsWith('/dashboard')) {
-    return NextResponse.redirect(new URL('/', request.url))  // Redirect to homepage
+  if (!claims && request.nextUrl.pathname.startsWith('/dashboard')) {
+    return NextResponse.redirect(new URL('/', request.url))
   }
 
   return response
