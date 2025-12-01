@@ -14,7 +14,7 @@ export default function Loader() {
         </div>
 
         {/* Loading text */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col items-center gap-3">
           <span className="text-2xl font-bold text-white">Coverforge</span>
           <div className="flex gap-1">
             <span className="w-2 h-2 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
