@@ -1,31 +1,28 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { MasterLetter } from '@/lib/types/database'
 import Loader from '@/components/Loader'
-import DocumentEditor from '@/components/craft/DocumentEditor'
+import TabbedEditor from '@/components/craft/TabbedEditor'
 import AIAssistant from '@/components/craft/AIAssistant'
-import ReferenceDocument from '@/components/craft/ReferenceDocument'
+import Sidebar from '@/components/craft/Sidebar'
+import { useDocuments } from './hooks/useDocuments'
 import toast from 'react-hot-toast'
 
 export default function CraftPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = createClient()
 
-  // Auth & data state
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
-  const [masterLetters, setMasterLetters] = useState<MasterLetter[]>([])
-  const [selectedLetterId, setSelectedLetterId] = useState<string>('')
-
-  // Editor state
-  const [content, setContent] = useState('')
-  const [referenceContent, setReferenceContent] = useState('')
   const [selectedText, setSelectedText] = useState('')
   const [selections, setSelections] = useState<{ id: string; text: string }[]>([])
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+
+  const docs = useDocuments(user)
 
   // Check auth
   useEffect(() => {
@@ -51,49 +48,16 @@ export default function CraftPage() {
     return () => subscription.unsubscribe()
   }, [router, supabase])
 
-  // Fetch master letters
+  // Auto-open document from URL
   useEffect(() => {
-    if (!user) return
-
-    const fetchMasterLetters = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('master_letters')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-
-        if (error) throw error
-        setMasterLetters(data || [])
-
-        // Auto-select first letter if available
-        if (data && data.length > 0 && !selectedLetterId) {
-          setSelectedLetterId(data[0].id)
-          setContent(data[0].content)
-        }
-      } catch (error: any) {
-        toast.error(error.message)
+    const docId = searchParams.get('doc')
+    if (docId && docs.documents.length > 0) {
+      const doc = docs.documents.find(d => d.id === docId)
+      if (doc && !docs.openDocuments.find(d => d.id === docId)) {
+        docs.openDocument(docId)
       }
     }
-
-    fetchMasterLetters()
-  }, [user, supabase])
-
-  // Handle master letter change
-  const handleLetterChange = (letterId: string) => {
-    const letter = masterLetters.find(l => l.id === letterId)
-    if (letter) {
-      setSelectedLetterId(letterId)
-      setContent(letter.content)
-      setSelectedText('')
-      setSelections([])
-    }
-  }
-
-  // Handle content change
-  const handleContentChange = (newContent: string) => {
-    setContent(newContent)
-  }
+  }, [searchParams, docs.documents])
 
   // Handle text selection
   const handleTextSelect = (text: string) => {
@@ -120,14 +84,14 @@ export default function CraftPage() {
 
   // Handle apply AI changes
   const handleApplyChanges = (modifications: { original: string; modified: string }[]) => {
-    let newContent = content
+    if (!docs.activeDocumentId) return
 
-    // Replace all original texts with modified texts
+    let newContent = docs.documentContents[docs.activeDocumentId] || ''
     modifications.forEach((mod) => {
       newContent = newContent.replace(mod.original, mod.modified)
     })
 
-    setContent(newContent)
+    docs.updateContent(docs.activeDocumentId, newContent)
     setSelections([])
     setSelectedText('')
     toast.success(`Applied ${modifications.length} change(s)!`)
@@ -135,26 +99,13 @@ export default function CraftPage() {
 
   // Handle save
   const handleSave = async () => {
-    if (!selectedLetterId) return
-
-    try {
-      const { error } = await supabase
-        .from('master_letters')
-        .update({ content })
-        .eq('id', selectedLetterId)
-
-      if (error) throw error
-      toast.success('Saved successfully!')
-    } catch (error: any) {
-      toast.error(error.message)
-    }
+    setSaveStatus('saving')
+    const result = await docs.saveAll()
+    setSaveStatus(result)
+    setTimeout(() => setSaveStatus('idle'), 2000)
   }
 
-  if (loading) {
-    return <Loader />
-  }
-
-  const selectedLetter = masterLetters.find(l => l.id === selectedLetterId)
+  if (loading) return <Loader />
 
   return (
     <div className="h-screen flex flex-col bg-dark-950">
@@ -162,75 +113,100 @@ export default function CraftPage() {
       <div className="bg-dark-800 border-b border-dark-700 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <h1 className="text-xl font-bold text-white">Craft</h1>
-
-          {/* Master Letter Selector */}
-          <select
-            value={selectedLetterId}
-            onChange={(e) => handleLetterChange(e.target.value)}
-            className="bg-dark-700 text-white border border-dark-600 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer"
-          >
-            <option value="">Select a master letter</option>
-            {masterLetters.map((letter) => (
-              <option key={letter.id} value={letter.id}>
-                {letter.title} ({letter.language})
-              </option>
-            ))}
-          </select>
         </div>
 
-        {/* Save Button */}
-        <button
-          onClick={handleSave}
-          disabled={!selectedLetterId}
-          className="bg-primary-600 hover:bg-primary-700 text-white rounded-lg px-6 py-2 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-        >
-          Save
-        </button>
+        {/* Save Status & Button */}
+        <div className="flex items-center gap-3">
+          {/* Save Status Indicator */}
+          {saveStatus !== 'idle' && (
+            <div className="flex items-center gap-2 text-sm">
+              {saveStatus === 'saving' && (
+                <>
+                  <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+                  <span className="text-dark-300">Saving...</span>
+                </>
+              )}
+              {saveStatus === 'saved' && (
+                <>
+                  <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-green-500">Saved</span>
+                </>
+              )}
+              {saveStatus === 'error' && (
+                <>
+                  <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <span className="text-red-500">Error</span>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Save Button */}
+          <button
+            onClick={handleSave}
+            disabled={docs.openDocuments.length === 0}
+            className="bg-primary-600 hover:bg-primary-700 text-white rounded-lg px-6 py-2 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          >
+            Save
+          </button>
+        </div>
       </div>
 
       {/* Main Content */}
-      {!selectedLetter ? (
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center text-dark-400">
-            <p className="text-lg mb-2">No master letter selected</p>
-            <p className="text-sm">Select a master letter from the header to get started</p>
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left: Sidebar */}
+        <Sidebar
+          content={docs.activeDocumentId ? (docs.documentReferences[docs.activeDocumentId] || '') : ''}
+          onContentChange={docs.updateReference}
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          documents={docs.documents}
+          onSelectDocument={docs.openDocument}
+          onCreateDocument={docs.createDocument}
+        />
+
+        {/* Center: Tabbed Editor or Empty State */}
+        {docs.openDocuments.length === 0 ? (
+          <div className="flex-1 flex items-center justify-center bg-dark-900">
+            <div className="text-center text-dark-400">
+              <svg className="w-24 h-24 mx-auto mb-4 text-dark-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <p className="text-xl mb-2">No documents open</p>
+              <p className="text-sm">Create or open a document from the sidebar to get started</p>
+            </div>
           </div>
-        </div>
-      ) : (
-        <div className="flex-1 flex overflow-hidden">
-          {/* Left: Reference Document Sidebar */}
-          <ReferenceDocument
-            content={referenceContent}
-            onContentChange={setReferenceContent}
-            isCollapsed={isSidebarCollapsed}
-            onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        ) : (
+          <TabbedEditor
+            openDocuments={docs.openDocuments}
+            activeDocumentId={docs.activeDocumentId}
+            documentContents={docs.documentContents}
+            onDocumentContentChange={docs.updateContent}
+            onActiveDocumentChange={docs.setActiveDocumentId}
+            onCloseDocument={docs.closeDocument}
+            onTextSelect={handleTextSelect}
+            selections={selections}
+            onRemoveSelection={handleRemoveSelection}
           />
+        )}
 
-          {/* Center: Document Editor */}
-          <div className="flex-1">
-            <DocumentEditor
-              content={content}
-              onContentChange={handleContentChange}
-              onTextSelect={handleTextSelect}
-              selections={selections}
-              onRemoveSelection={handleRemoveSelection}
-            />
-          </div>
-
-          {/* Right: AI Assistant */}
-          <div className="w-96">
-            <AIAssistant
-              selectedText={selectedText}
-              selections={selections}
-              onAddSelection={handleAddSelection}
-              onRemoveSelection={handleRemoveSelection}
-              onApplyChanges={handleApplyChanges}
-              referenceContent={referenceContent}
-              language={selectedLetter.language}
-            />
-          </div>
+        {/* Right: AI Assistant */}
+        <div className="w-96">
+          <AIAssistant
+            selectedText={selectedText}
+            selections={selections}
+            onAddSelection={handleAddSelection}
+            onRemoveSelection={handleRemoveSelection}
+            onApplyChanges={handleApplyChanges}
+            referenceContent={docs.activeDocumentId ? (docs.documentReferences[docs.activeDocumentId] || '') : ''}
+            language="EN"
+          />
         </div>
-      )}
+      </div>
     </div>
   )
 }
