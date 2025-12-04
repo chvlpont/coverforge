@@ -1,8 +1,9 @@
 'use client'
 
 import { useRef, useEffect, useState } from 'react'
-import { Document } from '@/lib/types/database'
+import { Document, Reference } from '@/lib/types/database'
 import DocumentsList from './DocumentsList'
+import ReferencesList from './ReferencesList'
 
 interface SidebarProps {
   content: string
@@ -13,6 +14,11 @@ interface SidebarProps {
   onSelectDocument: (documentId: string) => void
   onCreateDocument: () => void
   width: number
+  references: Reference[]
+  selectedReferenceId: string | null
+  onSelectReference: (referenceId: string) => void
+  onCreateReference: () => void
+  onUpdateReferenceTitle: (referenceId: string, title: string) => void
 }
 
 export default function Sidebar({
@@ -24,11 +30,66 @@ export default function Sidebar({
   onSelectDocument,
   onCreateDocument,
   width,
+  references,
+  selectedReferenceId,
+  onSelectReference,
+  onCreateReference,
+  onUpdateReferenceTitle,
 }: SidebarProps) {
   const editorRef = useRef<HTMLDivElement>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [activeTab, setActiveTab] = useState<'reference' | 'documents'>('reference')
+  const [showReferenceEditor, setShowReferenceEditor] = useState(false)
+  const [isEditingTitle, setIsEditingTitle] = useState(false)
+  const [editedTitle, setEditedTitle] = useState('')
   const placeholder = "Add reference information here (job description, company info, etc.)..."
+
+  // Show editor when a reference is selected
+  useEffect(() => {
+    if (selectedReferenceId) {
+      setShowReferenceEditor(true)
+    } else {
+      setShowReferenceEditor(false)
+    }
+  }, [selectedReferenceId])
+
+  // Handle reference selection
+  const handleSelectReference = (referenceId: string) => {
+    onSelectReference(referenceId)
+    setShowReferenceEditor(true)
+  }
+
+  // Get current reference
+  const currentReference = selectedReferenceId
+    ? references.find(r => r.id === selectedReferenceId)
+    : null
+
+  // Handle title edit
+  const handleTitleClick = () => {
+    if (currentReference) {
+      setEditedTitle(currentReference.title)
+      setIsEditingTitle(true)
+    }
+  }
+
+  const handleTitleBlur = () => {
+    if (selectedReferenceId && editedTitle.trim()) {
+      onUpdateReferenceTitle(selectedReferenceId, editedTitle.trim())
+    }
+    setIsEditingTitle(false)
+  }
+
+  const handleTitleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      if (selectedReferenceId && editedTitle.trim()) {
+        onUpdateReferenceTitle(selectedReferenceId, editedTitle.trim())
+      }
+      setIsEditingTitle(false)
+    } else if (e.key === 'Escape') {
+      setIsEditingTitle(false)
+    }
+  }
 
   // Update editor content when content changes (but not during editing)
   useEffect(() => {
@@ -115,19 +176,68 @@ export default function Sidebar({
       {!isCollapsed && (
         <>
           {activeTab === 'reference' ? (
-            <div className="flex-1 overflow-y-auto p-4">
-              <div
-                ref={editorRef}
-                contentEditable
-                onInput={handleInput}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
-                className="w-full h-full bg-dark-800 rounded-lg p-4 text-dark-100 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-primary-500 whitespace-pre-wrap"
-                style={{
-                  minHeight: '100px',
-                }}
-              />
-            </div>
+            <>
+              {showReferenceEditor ? (
+                <div className="flex-1 flex flex-col">
+                  {/* Back Button & Title */}
+                  <div className="px-4 pt-4 pb-2 space-y-3">
+                    <button
+                      onClick={() => {
+                        setShowReferenceEditor(false)
+                        onSelectReference('')
+                      }}
+                      className="flex items-center gap-2 text-dark-400 hover:text-white text-sm transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                      Back to references
+                    </button>
+
+                    {/* Editable Title */}
+                    {isEditingTitle ? (
+                      <input
+                        type="text"
+                        value={editedTitle}
+                        onChange={(e) => setEditedTitle(e.target.value)}
+                        onBlur={handleTitleBlur}
+                        onKeyDown={handleTitleKeyDown}
+                        autoFocus
+                        className="text-lg font-semibold text-white bg-transparent border-none outline-none focus:outline-none px-0 py-0 w-full"
+                      />
+                    ) : (
+                      <h3
+                        onClick={handleTitleClick}
+                        className="text-lg font-semibold text-white cursor-pointer hover:bg-dark-700 px-2 py-1 rounded transition-colors -ml-2"
+                        title="Click to edit"
+                      >
+                        {currentReference?.title || 'Reference'}
+                      </h3>
+                    )}
+                  </div>
+                  {/* Editor */}
+                  <div className="flex-1 overflow-y-auto px-4 pb-4">
+                    <div
+                      ref={editorRef}
+                      contentEditable
+                      onInput={handleInput}
+                      onFocus={handleFocus}
+                      onBlur={handleBlur}
+                      className="w-full h-full bg-dark-800 rounded-lg p-4 text-dark-100 text-sm leading-relaxed focus:outline-none whitespace-pre-wrap"
+                      style={{
+                        minHeight: '200px',
+                      }}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <ReferencesList
+                  references={references}
+                  onSelectReference={handleSelectReference}
+                  onCreateReference={onCreateReference}
+                />
+              )}
+            </>
           ) : (
             <DocumentsList
               documents={documents}
