@@ -20,9 +20,14 @@ export default function CraftPage() {
   const [selectedText, setSelectedText] = useState('')
   const [selections, setSelections] = useState<{ id: string; text: string }[]>([])
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [editedTitle, setEditedTitle] = useState('')
+  const [sidebarWidth, setSidebarWidth] = useState(320)
+  const [aiAssistantWidth, setAIAssistantWidth] = useState(384)
+  const [isDraggingSidebar, setIsDraggingSidebar] = useState(false)
+  const [isDraggingAI, setIsDraggingAI] = useState(false)
+  const [dragStartX, setDragStartX] = useState(0)
+  const [dragStartWidth, setDragStartWidth] = useState(0)
 
   const docs = useDocuments(user)
 
@@ -99,14 +104,6 @@ export default function CraftPage() {
     toast.success(`Applied ${modifications.length} change(s)!`)
   }
 
-  // Handle save
-  const handleSave = async () => {
-    setSaveStatus('saving')
-    const result = await docs.saveAll()
-    setSaveStatus(result)
-    setTimeout(() => setSaveStatus('idle'), 2000)
-  }
-
   // Handle title edit
   const handleTitleClick = () => {
     if (docs.activeDocumentId) {
@@ -142,6 +139,53 @@ export default function CraftPage() {
     ? docs.openDocuments.find(d => d.id === docs.activeDocumentId)?.title || 'Craft'
     : 'Craft'
 
+  // Handle sidebar resize
+  const handleSidebarMouseDown = (e: React.MouseEvent) => {
+    setIsDraggingSidebar(true)
+    setDragStartX(e.clientX)
+    setDragStartWidth(sidebarWidth)
+  }
+
+  const handleAIMouseDown = (e: React.MouseEvent) => {
+    setIsDraggingAI(true)
+    setDragStartX(e.clientX)
+    setDragStartWidth(aiAssistantWidth)
+  }
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDraggingSidebar) {
+        const delta = e.clientX - dragStartX
+        const newWidth = Math.max(200, Math.min(600, dragStartWidth + delta))
+        setSidebarWidth(newWidth)
+      }
+      if (isDraggingAI) {
+        const delta = dragStartX - e.clientX
+        const newWidth = Math.max(300, Math.min(700, dragStartWidth + delta))
+        setAIAssistantWidth(newWidth)
+      }
+    }
+
+    const handleMouseUp = () => {
+      setIsDraggingSidebar(false)
+      setIsDraggingAI(false)
+    }
+
+    if (isDraggingSidebar || isDraggingAI) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+      document.body.style.cursor = 'col-resize'
+      document.body.style.userSelect = 'none'
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    }
+  }, [isDraggingSidebar, isDraggingAI, dragStartX, dragStartWidth])
+
   if (loading) return <Loader />
 
   return (
@@ -170,46 +214,6 @@ export default function CraftPage() {
             </h1>
           )}
         </div>
-
-        {/* Save Status & Button */}
-        <div className="flex items-center gap-3">
-          {/* Save Status Indicator */}
-          {saveStatus !== 'idle' && (
-            <div className="flex items-center gap-2 text-sm">
-              {saveStatus === 'saving' && (
-                <>
-                  <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
-                  <span className="text-dark-300">Saving...</span>
-                </>
-              )}
-              {saveStatus === 'saved' && (
-                <>
-                  <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-green-500">Saved</span>
-                </>
-              )}
-              {saveStatus === 'error' && (
-                <>
-                  <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  <span className="text-red-500">Error</span>
-                </>
-              )}
-            </div>
-          )}
-
-          {/* Save Button */}
-          <button
-            onClick={handleSave}
-            disabled={docs.openDocuments.length === 0}
-            className="bg-primary-600 hover:bg-primary-700 text-white rounded-lg px-6 py-2 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-          >
-            Save
-          </button>
-        </div>
       </div>
 
       {/* Main Content */}
@@ -223,7 +227,18 @@ export default function CraftPage() {
           documents={docs.documents}
           onSelectDocument={docs.openDocument}
           onCreateDocument={docs.createDocument}
+          width={sidebarWidth}
         />
+
+        {/* Sidebar Resize Handle */}
+        {!isSidebarCollapsed && (
+          <div
+            onMouseDown={handleSidebarMouseDown}
+            className={`w-1 hover:w-1 cursor-col-resize flex-shrink-0 transition-colors ${
+              isDraggingSidebar ? 'bg-blue-500' : 'bg-dark-700 hover:bg-blue-500'
+            }`}
+          />
+        )}
 
         {/* Center: Tabbed Editor or Empty State */}
         {docs.openDocuments.length === 0 ? (
@@ -250,8 +265,16 @@ export default function CraftPage() {
           />
         )}
 
+        {/* AI Assistant Resize Handle */}
+        <div
+          onMouseDown={handleAIMouseDown}
+          className={`w-1 hover:w-1 cursor-col-resize flex-shrink-0 transition-colors ${
+            isDraggingAI ? 'bg-blue-500' : 'bg-dark-700 hover:bg-blue-500'
+          }`}
+        />
+
         {/* Right: AI Assistant */}
-        <div className="w-96">
+        <div style={{ width: aiAssistantWidth }} className="flex-shrink-0">
           <AIAssistant
             selectedText={selectedText}
             selections={selections}
