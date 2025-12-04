@@ -12,6 +12,7 @@ interface SidebarProps {
   documents: Document[]
   onSelectDocument: (documentId: string) => void
   onCreateDocument: () => void
+  width: number
 }
 
 export default function Sidebar({
@@ -22,6 +23,7 @@ export default function Sidebar({
   documents,
   onSelectDocument,
   onCreateDocument,
+  width,
 }: SidebarProps) {
   const editorRef = useRef<HTMLDivElement>(null)
   const [isEditing, setIsEditing] = useState(false)
@@ -60,15 +62,13 @@ export default function Sidebar({
   }
 
   return (
-    <div className={`h-full bg-dark-850 flex flex-col border-r border-dark-700 transition-all duration-300 ${isCollapsed ? 'w-12' : 'w-80'}`}>
+    <div
+      className="h-full bg-dark-850 flex flex-col flex-shrink-0"
+      style={{ width: isCollapsed ? '48px' : `${width}px` }}
+    >
       {/* Header */}
       <div className="bg-dark-900 border-b border-dark-700 flex-shrink-0">
-        <div className="px-4 py-3 flex items-center justify-between">
-          {!isCollapsed && (
-            <div className="flex-1">
-              <h3 className="text-sm font-semibold text-white">Sidebar</h3>
-            </div>
-          )}
+        <div className="px-4 py-3 flex items-center justify-end">
           <button
             onClick={onToggleCollapse}
             className="text-dark-400 hover:text-white transition-colors p-1"
