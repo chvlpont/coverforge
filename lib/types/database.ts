@@ -16,3 +16,12 @@ export interface Document {
   created_at: string
   updated_at: string
 }
+
+export interface Reference {
+  id: string
+  user_id: string
+  title: string
+  content: string
+  created_at: string
+  updated_at: string
+}
