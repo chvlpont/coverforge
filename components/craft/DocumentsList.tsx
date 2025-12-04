@@ -38,7 +38,7 @@ export default function DocumentsList({
             <button
               key={doc.id}
               onClick={() => onSelectDocument(doc.id)}
-              className="w-full bg-dark-800 hover:bg-dark-750 text-left rounded-lg px-4 py-3 text-sm transition-colors border border-dark-700 hover:border-primary-500"
+              className="w-full bg-dark-800 hover:bg-dark-750 text-left rounded-lg px-4 py-3 text-sm transition-colors border border-dark-700 hover:border-primary-500 cursor-pointer"
             >
               <div className="font-medium text-white truncate">{doc.title}</div>
               <div className="text-xs text-dark-400 mt-1">
