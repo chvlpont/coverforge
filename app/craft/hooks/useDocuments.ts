@@ -183,6 +183,27 @@ export function useDocuments(user: any) {
     }
   }
 
+  // Update document title
+  const updateTitle = async (documentId: string, title: string) => {
+    try {
+      const { error } = await supabase
+        .from('documents')
+        .update({ title, updated_at: new Date().toISOString() })
+        .eq('id', documentId)
+
+      if (error) throw error
+
+      setDocuments(docs =>
+        docs.map(d => d.id === documentId ? { ...d, title, updated_at: new Date().toISOString() } : d)
+      )
+      setOpenDocuments(docs =>
+        docs.map(d => d.id === documentId ? { ...d, title } : d)
+      )
+    } catch (error: any) {
+      toast.error('Failed to update title: ' + error.message)
+    }
+  }
+
   // Save all
   const saveAll = async () => {
     if (openDocuments.length === 0) return 'idle'
@@ -224,6 +245,7 @@ export function useDocuments(user: any) {
     closeDocument,
     updateContent,
     updateReference,
+    updateTitle,
     saveAll,
   }
 }
