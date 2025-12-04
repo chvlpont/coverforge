@@ -21,6 +21,8 @@ export default function CraftPage() {
   const [selections, setSelections] = useState<{ id: string; text: string }[]>([])
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [isEditingTitle, setIsEditingTitle] = useState(false)
+  const [editedTitle, setEditedTitle] = useState('')
 
   const docs = useDocuments(user)
 
@@ -105,6 +107,41 @@ export default function CraftPage() {
     setTimeout(() => setSaveStatus('idle'), 2000)
   }
 
+  // Handle title edit
+  const handleTitleClick = () => {
+    if (docs.activeDocumentId) {
+      const activeDoc = docs.openDocuments.find(d => d.id === docs.activeDocumentId)
+      if (activeDoc) {
+        setEditedTitle(activeDoc.title)
+        setIsEditingTitle(true)
+      }
+    }
+  }
+
+  const handleTitleBlur = () => {
+    if (docs.activeDocumentId && editedTitle.trim()) {
+      docs.updateTitle(docs.activeDocumentId, editedTitle.trim())
+    }
+    setIsEditingTitle(false)
+  }
+
+  const handleTitleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      if (docs.activeDocumentId && editedTitle.trim()) {
+        docs.updateTitle(docs.activeDocumentId, editedTitle.trim())
+      }
+      setIsEditingTitle(false)
+    } else if (e.key === 'Escape') {
+      setIsEditingTitle(false)
+    }
+  }
+
+  // Get current title
+  const currentTitle = docs.activeDocumentId
+    ? docs.openDocuments.find(d => d.id === docs.activeDocumentId)?.title || 'Craft'
+    : 'Craft'
+
   if (loading) return <Loader />
 
   return (
@@ -112,7 +149,26 @@ export default function CraftPage() {
       {/* Header */}
       <div className="bg-dark-800 border-b border-dark-700 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <h1 className="text-xl font-bold text-white">Craft</h1>
+          {isEditingTitle ? (
+            <input
+              type="text"
+              value={editedTitle}
+              onChange={(e) => setEditedTitle(e.target.value)}
+              onBlur={handleTitleBlur}
+              onKeyDown={handleTitleKeyDown}
+              autoFocus
+              className="text-xl font-bold text-white bg-transparent border-none outline-none focus:outline-none px-0 py-0"
+              style={{ width: `${Math.max(editedTitle.length * 12, 60)}px` }}
+            />
+          ) : (
+            <h1
+              onClick={handleTitleClick}
+              className={`text-xl font-bold text-white ${docs.activeDocumentId ? 'cursor-pointer hover:bg-dark-700 px-2 py-1 rounded transition-colors' : ''}`}
+              title={docs.activeDocumentId ? 'Click to edit' : ''}
+            >
+              {currentTitle}
+            </h1>
+          )}
         </div>
 
         {/* Save Status & Button */}
