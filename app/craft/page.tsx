@@ -8,6 +8,7 @@ import TabbedEditor from '@/components/craft/TabbedEditor'
 import AIAssistant from '@/components/craft/AIAssistant'
 import Sidebar from '@/components/craft/Sidebar'
 import { useDocuments } from './hooks/useDocuments'
+import { useReferences } from './hooks/useReferences'
 import toast from 'react-hot-toast'
 
 export default function CraftPage() {
@@ -30,6 +31,18 @@ export default function CraftPage() {
   const [dragStartWidth, setDragStartWidth] = useState(0)
 
   const docs = useDocuments(user)
+  const refs = useReferences(user)
+
+  // Autosave reference content
+  useEffect(() => {
+    if (!refs.selectedReferenceId || !refs.referenceContent) return
+
+    const timer = setTimeout(() => {
+      refs.saveContent()
+    }, 2000)
+
+    return () => clearTimeout(timer)
+  }, [refs.referenceContent, refs.selectedReferenceId])
 
   // Check auth
   useEffect(() => {
@@ -220,14 +233,19 @@ export default function CraftPage() {
       <div className="flex-1 flex overflow-hidden">
         {/* Left: Sidebar */}
         <Sidebar
-          content={docs.activeDocumentId ? (docs.documentReferences[docs.activeDocumentId] || '') : ''}
-          onContentChange={docs.updateReference}
+          content={refs.referenceContent}
+          onContentChange={refs.updateContent}
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           documents={docs.documents}
           onSelectDocument={docs.openDocument}
           onCreateDocument={docs.createDocument}
           width={sidebarWidth}
+          references={refs.references}
+          selectedReferenceId={refs.selectedReferenceId}
+          onSelectReference={refs.selectReference}
+          onCreateReference={refs.createReference}
+          onUpdateReferenceTitle={refs.updateTitle}
         />
 
         {/* Sidebar Resize Handle */}
@@ -281,7 +299,7 @@ export default function CraftPage() {
             onAddSelection={handleAddSelection}
             onRemoveSelection={handleRemoveSelection}
             onApplyChanges={handleApplyChanges}
-            referenceContent={docs.activeDocumentId ? (docs.documentReferences[docs.activeDocumentId] || '') : ''}
+            referenceContent={refs.referenceContent}
             language="EN"
           />
         </div>
