@@ -79,11 +79,6 @@ export default function DocumentEditor({
 
   return (
     <div className="h-full bg-white flex flex-col">
-      {/* Document Header */}
-      <div className="bg-gray-50 border-b border-gray-200 px-8 py-3 flex-shrink-0">
-        <div className="text-sm text-gray-500">Master Letter</div>
-      </div>
-
       {/* Document Content */}
       <div className="flex-1 overflow-y-auto">
         <div className="h-full max-w-4xl mx-auto py-12 px-16">
