@@ -301,8 +301,6 @@ export default function CraftPage() {
             onApplyChanges={handleApplyChanges}
             referenceContent={refs.referenceContent}
             language="EN"
-            referenceName={refs.selectedReferenceId ? refs.references.find(r => r.id === refs.selectedReferenceId)?.title : undefined}
-            documentName={docs.activeDocumentId ? docs.openDocuments.find(d => d.id === docs.activeDocumentId)?.title : undefined}
           />
         </div>
       </div>
