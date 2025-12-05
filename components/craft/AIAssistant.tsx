@@ -89,24 +89,6 @@ export default function AIAssistant({
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
-        {/* Current Selection */}
-        {selectedText && (
-          <div className="bg-dark-700 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-xs text-dark-400">Current Selection:</div>
-              <button
-                onClick={onAddSelection}
-                className="text-xs bg-primary-600 hover:bg-primary-700 text-white rounded px-3 py-1 transition-colors cursor-pointer"
-              >
-                + Add to List
-              </button>
-            </div>
-            <div className="text-sm text-white whitespace-pre-wrap line-clamp-3">
-              {selectedText}
-            </div>
-          </div>
-        )}
-
         {/* Selected Texts List */}
         {selections.length > 0 && (
           <div className="space-y-2">
@@ -135,7 +117,7 @@ export default function AIAssistant({
           </div>
         )}
 
-        {!selectedText && selections.length === 0 && (
+        {selections.length === 0 && (
           <div className="text-dark-400 text-sm text-center py-8">
             Select text in the document to get started
           </div>
