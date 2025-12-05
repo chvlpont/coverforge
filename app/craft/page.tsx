@@ -79,22 +79,26 @@ export default function CraftPage() {
     }
   }, [searchParams, docs.documents])
 
-  // Handle text selection
+  // Handle text selection - auto-add to selections
   const handleTextSelect = (text: string) => {
-    setSelectedText(text)
-  }
+    if (!text.trim()) return
 
-  // Handle add selection
-  const handleAddSelection = () => {
-    if (!selectedText.trim()) return
+    // Check if this text is already in selections
+    const alreadyExists = selections.some(s => s.text === text)
+    if (alreadyExists) return
 
     const newSelection = {
       id: Date.now().toString(),
-      text: selectedText,
+      text: text,
     }
 
     setSelections([...selections, newSelection])
-    setSelectedText('')
+    setSelectedText(text)
+  }
+
+  // Handle add selection (kept for compatibility, but now handled by handleTextSelect)
+  const handleAddSelection = () => {
+    // This is now handled automatically in handleTextSelect
   }
 
   // Handle remove selection
