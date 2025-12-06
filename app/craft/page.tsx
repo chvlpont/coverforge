@@ -106,14 +106,57 @@ export default function CraftPage() {
     setSelections(selections.filter((s) => s.id !== id))
   }
 
+  // Helper to strip HTML tags
+  const stripHtml = (html: string): string => {
+    const tmp = document.createElement('div')
+    tmp.innerHTML = html
+    return tmp.textContent || tmp.innerText || ''
+  }
+
   // Handle apply AI changes
   const handleApplyChanges = (modifications: { original: string; modified: string }[]) => {
     if (!docs.activeDocumentId) return
 
     let newContent = docs.documentContents[docs.activeDocumentId] || ''
-    modifications.forEach((mod) => {
-      newContent = newContent.replace(mod.original, mod.modified)
-    })
+
+    // Check if content is HTML or plain text
+    const isHtmlContent = newContent.includes('<') && newContent.includes('>')
+
+    if (isHtmlContent) {
+      // For HTML content, we need to be more careful
+      // Create a temporary div to manipulate the HTML
+      const tempDiv = document.createElement('div')
+      tempDiv.innerHTML = newContent
+
+      modifications.forEach((mod) => {
+        // Get all text nodes
+        const walker = document.createTreeWalker(
+          tempDiv,
+          NodeFilter.SHOW_TEXT,
+          null
+        )
+
+        const textNodes: Text[] = []
+        let node
+        while ((node = walker.nextNode())) {
+          textNodes.push(node as Text)
+        }
+
+        // Find and replace in text nodes
+        textNodes.forEach((textNode) => {
+          if (textNode.nodeValue && textNode.nodeValue.includes(mod.original)) {
+            textNode.nodeValue = textNode.nodeValue.replace(mod.original, mod.modified)
+          }
+        })
+      })
+
+      newContent = tempDiv.innerHTML
+    } else {
+      // For plain text, simple replacement works
+      modifications.forEach((mod) => {
+        newContent = newContent.replace(mod.original, mod.modified)
+      })
+    }
 
     docs.updateContent(docs.activeDocumentId, newContent)
     setSelections([])
