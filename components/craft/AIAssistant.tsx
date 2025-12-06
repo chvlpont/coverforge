@@ -169,33 +169,48 @@ export default function AIAssistant({
           </div>
         )}
 
-        <textarea
-          value={instruction}
-          onChange={(e) => setInstruction(e.target.value)}
-          placeholder="Type your instruction (e.g., 'make this more professional')"
-          className="w-full bg-dark-700 text-white border border-dark-600 rounded-lg px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-500"
-          rows={3}
-          disabled={selections.length === 0}
-        />
-
-        <div className="flex gap-2">
+        <div className="relative">
+          <input
+            type="text"
+            value={instruction}
+            onChange={(e) => setInstruction(e.target.value)}
+            placeholder="Type your instruction..."
+            className="w-full bg-dark-700 text-white border border-dark-600 rounded-lg px-4 py-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            disabled={selections.length === 0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                handleAskAI()
+              }
+            }}
+          />
           <button
             onClick={handleAskAI}
             disabled={selections.length === 0 || !instruction.trim() || loading}
-            className="flex-1 bg-primary-600 hover:bg-primary-700 text-white rounded-lg py-2 px-4 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="absolute top-1/2 right-3 -translate-y-1/2 p-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Send"
           >
-            {loading ? 'Processing...' : 'Ask AI'}
+            {loading ? (
+              <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" strokeWidth="2" className="opacity-25"></circle>
+                <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" className="opacity-75"></path>
+              </svg>
+            ) : (
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m22 2-7 20-4-9-9-4 20-7z" />
+              </svg>
+            )}
           </button>
-
-          {aiResponses.length > 0 && (
-            <button
-              onClick={handleApply}
-              className="flex-1 bg-accent-600 hover:bg-accent-700 text-white rounded-lg py-2 px-4 text-sm font-medium transition-colors cursor-pointer"
-            >
-              Apply All
-            </button>
-          )}
         </div>
+
+        {aiResponses.length > 0 && (
+          <button
+            onClick={handleApply}
+            className="w-full bg-accent-600 hover:bg-accent-700 text-white rounded-lg py-2 px-4 text-sm font-medium transition-colors cursor-pointer"
+          >
+            Apply All
+          </button>
+        )}
       </div>
     </div>
   )
