@@ -125,7 +125,7 @@ export default function AIAssistant({
 
         {/* AI Responses */}
         {aiResponses.length > 0 && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="text-xs text-primary-400 font-medium">
               AI Suggestions ({aiResponses.length}):
             </div>
@@ -139,6 +139,14 @@ export default function AIAssistant({
                 </div>
               </div>
             ))}
+
+            {/* Apply button inside scrollable area */}
+            <button
+              onClick={handleApply}
+              className="w-full bg-accent-600 hover:bg-accent-700 text-white rounded-lg py-2.5 px-4 text-sm font-medium transition-colors shadow-lg"
+            >
+              Apply All Changes
+            </button>
           </div>
         )}
       </div>
@@ -202,15 +210,6 @@ export default function AIAssistant({
             )}
           </button>
         </div>
-
-        {aiResponses.length > 0 && (
-          <button
-            onClick={handleApply}
-            className="w-full bg-accent-600 hover:bg-accent-700 text-white rounded-lg py-2 px-4 text-sm font-medium transition-colors cursor-pointer"
-          >
-            Apply All
-          </button>
-        )}
       </div>
     </div>
   )
