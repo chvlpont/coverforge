@@ -9,12 +9,14 @@ import AIAssistant from '@/components/craft/AIAssistant'
 import Sidebar from '@/components/craft/Sidebar'
 import { useDocuments } from './hooks/useDocuments'
 import { useReferences } from './hooks/useReferences'
+import { ThemeProvider, useTheme } from '@/contexts/ThemeContext'
 import toast from 'react-hot-toast'
 
-export default function CraftPage() {
+function CraftPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = createClient()
+  const { theme, toggleTheme } = useTheme()
 
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
@@ -30,7 +32,6 @@ export default function CraftPage() {
   const [isDraggingAI, setIsDraggingAI] = useState(false)
   const [dragStartX, setDragStartX] = useState(0)
   const [dragStartWidth, setDragStartWidth] = useState(0)
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark')
 
   const docs = useDocuments(user)
   const refs = useReferences(user)
@@ -346,7 +347,7 @@ export default function CraftPage() {
 
         {/* Theme Toggle */}
         <button
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          onClick={toggleTheme}
           className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-dark-700 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'}`}
           title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
         >
@@ -379,7 +380,6 @@ export default function CraftPage() {
           onSelectReference={refs.selectReference}
           onCreateReference={refs.createReference}
           onUpdateReferenceTitle={refs.updateTitle}
-          theme={theme}
         />
 
         {/* Sidebar Resize Handle */}
@@ -417,7 +417,6 @@ export default function CraftPage() {
             pendingModifications={pendingModifications}
             onAcceptChanges={handleAcceptChanges}
             onRejectChanges={handleRejectChanges}
-            theme={theme}
           />
         )}
 
@@ -441,7 +440,6 @@ export default function CraftPage() {
             language="EN"
             referenceName={refs.selectedReferenceId ? refs.references.find(r => r.id === refs.selectedReferenceId)?.title : undefined}
             documentName={docs.activeDocumentId ? docs.openDocuments.find(d => d.id === docs.activeDocumentId)?.title : undefined}
-            theme={theme}
             pendingModifications={pendingModifications}
             onAcceptChanges={handleAcceptChanges}
             onRejectChanges={handleRejectChanges}
@@ -449,5 +447,13 @@ export default function CraftPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function CraftPage() {
+  return (
+    <ThemeProvider>
+      <CraftPageContent />
+    </ThemeProvider>
   )
 }

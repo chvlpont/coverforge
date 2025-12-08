@@ -1,20 +1,20 @@
 'use client'
 
 import { Document } from '@/lib/types/database'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface DocumentsListProps {
   documents: Document[]
   onSelectDocument: (documentId: string) => void
   onCreateDocument: () => void
-  theme: 'light' | 'dark'
 }
 
 export default function DocumentsList({
   documents,
   onSelectDocument,
   onCreateDocument,
-  theme,
 }: DocumentsListProps) {
+  const { theme } = useTheme()
   return (
     <div className="flex-1 overflow-y-auto p-4">
       {/* Create New Button */}

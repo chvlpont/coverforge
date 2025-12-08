@@ -15,10 +15,10 @@ import {
   Heading3,
   Type
 } from 'lucide-react'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface FormatToolbarProps {
   editor: Editor | null
-  theme?: 'light' | 'dark'
 }
 
 const ToolbarButton = ({
@@ -51,7 +51,9 @@ const Divider = ({ theme = 'dark' }: { theme?: 'light' | 'dark' }) => (
   <div className={`w-px h-6 mx-1 ${theme === 'dark' ? 'bg-gray-600' : 'bg-gray-300'}`} />
 )
 
-export default function FormatToolbar({ editor, theme = 'dark' }: FormatToolbarProps) {
+export default function FormatToolbar({ editor }: FormatToolbarProps) {
+  const { theme } = useTheme()
+
   if (!editor) {
     return null
   }

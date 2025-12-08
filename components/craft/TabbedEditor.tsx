@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { Document } from '@/lib/types/database'
 import DocumentEditor from './DocumentEditor'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface TabbedEditorProps {
   openDocuments: Document[]
@@ -17,7 +18,6 @@ interface TabbedEditorProps {
   pendingModifications: { id: string; original: string; modified: string }[]
   onAcceptChanges: () => void
   onRejectChanges: () => void
-  theme: 'light' | 'dark'
 }
 
 export default function TabbedEditor({
@@ -33,8 +33,8 @@ export default function TabbedEditor({
   pendingModifications,
   onAcceptChanges,
   onRejectChanges,
-  theme,
 }: TabbedEditorProps) {
+  const { theme } = useTheme()
   // Auto-select first document if none selected
   useEffect(() => {
     if (!activeDocumentId && openDocuments.length > 0) {
@@ -94,7 +94,6 @@ export default function TabbedEditor({
             pendingModifications={pendingModifications}
             onAcceptChanges={onAcceptChanges}
             onRejectChanges={onRejectChanges}
-            theme={theme}
           />
         )}
       </div>

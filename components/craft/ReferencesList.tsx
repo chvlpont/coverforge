@@ -1,20 +1,20 @@
 'use client'
 
 import { Reference } from '@/lib/types/database'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface ReferencesListProps {
   references: Reference[]
   onSelectReference: (referenceId: string) => void
   onCreateReference: () => void
-  theme: 'light' | 'dark'
 }
 
 export default function ReferencesList({
   references,
   onSelectReference,
   onCreateReference,
-  theme,
 }: ReferencesListProps) {
+  const { theme } = useTheme()
   return (
     <div className="flex-1 overflow-y-auto p-4">
       {/* Create New Button */}

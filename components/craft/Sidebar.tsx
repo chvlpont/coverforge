@@ -4,6 +4,7 @@ import { useRef, useEffect, useState } from 'react'
 import { Document, Reference } from '@/lib/types/database'
 import DocumentsList from './DocumentsList'
 import ReferencesList from './ReferencesList'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface SidebarProps {
   content: string
@@ -19,7 +20,6 @@ interface SidebarProps {
   onSelectReference: (referenceId: string) => void
   onCreateReference: () => void
   onUpdateReferenceTitle: (referenceId: string, title: string) => void
-  theme: 'light' | 'dark'
 }
 
 export default function Sidebar({
@@ -36,8 +36,8 @@ export default function Sidebar({
   onSelectReference,
   onCreateReference,
   onUpdateReferenceTitle,
-  theme,
 }: SidebarProps) {
+  const { theme } = useTheme()
   const editorRef = useRef<HTMLDivElement>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [activeTab, setActiveTab] = useState<'reference' | 'documents'>('reference')
@@ -248,7 +248,6 @@ export default function Sidebar({
                   references={references}
                   onSelectReference={handleSelectReference}
                   onCreateReference={onCreateReference}
-                  theme={theme}
                 />
               )}
             </>
@@ -257,7 +256,6 @@ export default function Sidebar({
               documents={documents}
               onSelectDocument={onSelectDocument}
               onCreateDocument={onCreateDocument}
-              theme={theme}
             />
           )}
         </>

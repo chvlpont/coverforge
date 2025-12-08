@@ -9,6 +9,7 @@ import TextAlign from '@tiptap/extension-text-align'
 import Highlight from '@tiptap/extension-highlight'
 import { FontSize } from '@/lib/tiptap-extensions'
 import FormatToolbar from './FormatToolbar'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface TextSelection {
   id: string
@@ -24,7 +25,6 @@ interface DocumentEditorProps {
   pendingModifications: { id: string; original: string; modified: string }[]
   onAcceptChanges: () => void
   onRejectChanges: () => void
-  theme?: 'light' | 'dark'
 }
 
 export default function DocumentEditor({
@@ -36,8 +36,8 @@ export default function DocumentEditor({
   pendingModifications,
   onAcceptChanges,
   onRejectChanges,
-  theme = 'dark',
 }: DocumentEditorProps) {
+  const { theme } = useTheme()
   const [isInitialized, setIsInitialized] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -162,7 +162,7 @@ export default function DocumentEditor({
   return (
     <div ref={containerRef} className={`h-full flex flex-col relative ${theme === 'dark' ? 'bg-dark-800' : 'bg-white'}`}>
       {/* Format Toolbar */}
-      <FormatToolbar editor={editor} theme={theme} />
+      <FormatToolbar editor={editor} />
 
       {/* Document Content */}
       <div className="flex-1 overflow-y-auto">

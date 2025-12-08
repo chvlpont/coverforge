@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface TextSelection {
   id: string
@@ -17,7 +18,6 @@ interface AIAssistantProps {
   language: string
   referenceName?: string
   documentName?: string
-  theme: 'light' | 'dark'
   pendingModifications: { id: string; original: string; modified: string }[]
   onAcceptChanges: () => void
   onRejectChanges: () => void
@@ -33,11 +33,11 @@ export default function AIAssistant({
   language,
   referenceName,
   documentName,
-  theme,
   pendingModifications,
   onAcceptChanges,
   onRejectChanges,
 }: AIAssistantProps) {
+  const { theme } = useTheme()
   const [instruction, setInstruction] = useState('')
   const [loading, setLoading] = useState(false)
 
