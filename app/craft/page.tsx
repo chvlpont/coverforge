@@ -30,6 +30,7 @@ export default function CraftPage() {
   const [isDraggingAI, setIsDraggingAI] = useState(false)
   const [dragStartX, setDragStartX] = useState(0)
   const [dragStartWidth, setDragStartWidth] = useState(0)
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark')
 
   const docs = useDocuments(user)
   const refs = useReferences(user)
@@ -170,13 +171,16 @@ export default function CraftPage() {
     }))
     setPendingModifications(modificationsWithIds)
 
-    setSelections([])
-    setSelectedText('')
+    // Don't clear selections yet - keep highlights for accept/reject buttons
+    // setSelections([])
+    // setSelectedText('')
   }
 
   // Accept changes - keep the modifications
   const handleAcceptChanges = () => {
     setPendingModifications([])
+    setSelections([])
+    setSelectedText('')
     toast.success('Changes accepted!')
   }
 
@@ -224,6 +228,8 @@ export default function CraftPage() {
 
     docs.updateContent(docs.activeDocumentId, newContent)
     setPendingModifications([])
+    setSelections([])
+    setSelectedText('')
     toast.success('Changes rejected!')
   }
 
@@ -312,9 +318,9 @@ export default function CraftPage() {
   if (loading) return <Loader />
 
   return (
-    <div className="h-screen flex flex-col bg-dark-950">
+    <div className={`h-screen flex flex-col ${theme === 'dark' ? 'bg-dark-950' : 'bg-gray-50'}`}>
       {/* Header */}
-      <div className="bg-dark-800 px-6 py-4 flex items-center justify-between shadow-sm">
+      <div className={`px-6 py-4 flex items-center justify-between ${theme === 'dark' ? 'bg-dark-800 shadow-sm' : 'bg-white border-b border-gray-200'}`}>
         <div className="flex items-center gap-4">
           {isEditingTitle ? (
             <input
@@ -324,19 +330,36 @@ export default function CraftPage() {
               onBlur={handleTitleBlur}
               onKeyDown={handleTitleKeyDown}
               autoFocus
-              className="text-xl font-bold text-white bg-transparent border-none outline-none focus:outline-none px-0 py-0"
+              className={`text-xl font-bold bg-transparent border-none outline-none focus:outline-none px-0 py-0 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}
               style={{ width: `${Math.max(editedTitle.length * 12, 60)}px` }}
             />
           ) : (
             <h1
               onClick={handleTitleClick}
-              className={`text-xl font-bold text-white ${docs.activeDocumentId ? 'cursor-pointer hover:bg-dark-700 px-2 py-1 rounded transition-colors' : ''}`}
+              className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} ${docs.activeDocumentId ? `cursor-pointer px-2 py-1 rounded transition-colors ${theme === 'dark' ? 'hover:bg-dark-700' : 'hover:bg-gray-100'}` : ''}`}
               title={docs.activeDocumentId ? 'Click to edit' : ''}
             >
               {currentTitle}
             </h1>
           )}
         </div>
+
+        {/* Theme Toggle */}
+        <button
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-dark-700 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'}`}
+          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+        >
+          {theme === 'dark' ? (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          ) : (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+          )}
+        </button>
       </div>
 
       {/* Main Content */}
@@ -356,23 +379,24 @@ export default function CraftPage() {
           onSelectReference={refs.selectReference}
           onCreateReference={refs.createReference}
           onUpdateReferenceTitle={refs.updateTitle}
+          theme={theme}
         />
 
         {/* Sidebar Resize Handle */}
         {!isSidebarCollapsed && (
           <div
             onMouseDown={handleSidebarMouseDown}
-            className={`w-1 hover:w-1 cursor-col-resize flex-shrink-0 transition-colors ${
-              isDraggingSidebar ? 'bg-blue-500' : 'bg-dark-700 hover:bg-blue-500'
+            className={`w-px hover:w-1 cursor-col-resize flex-shrink-0 transition-colors ${
+              isDraggingSidebar ? 'bg-blue-500' : 'bg-transparent hover:bg-blue-500'
             }`}
           />
         )}
 
         {/* Center: Tabbed Editor or Empty State */}
         {docs.openDocuments.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center bg-dark-900">
-            <div className="text-center text-dark-400">
-              <svg className="w-24 h-24 mx-auto mb-4 text-dark-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className={`flex-1 flex items-center justify-center ${theme === 'dark' ? 'bg-dark-900' : 'bg-white'}`}>
+            <div className={`text-center ${theme === 'dark' ? 'text-dark-400' : 'text-gray-500'}`}>
+              <svg className={`w-24 h-24 mx-auto mb-4 ${theme === 'dark' ? 'text-dark-600' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               <p className="text-xl mb-2">No documents open</p>
@@ -393,14 +417,15 @@ export default function CraftPage() {
             pendingModifications={pendingModifications}
             onAcceptChanges={handleAcceptChanges}
             onRejectChanges={handleRejectChanges}
+            theme={theme}
           />
         )}
 
         {/* AI Assistant Resize Handle */}
         <div
           onMouseDown={handleAIMouseDown}
-          className={`w-1 hover:w-1 cursor-col-resize flex-shrink-0 transition-colors ${
-            isDraggingAI ? 'bg-blue-500' : 'bg-dark-700 hover:bg-blue-500'
+          className={`w-px hover:w-1 cursor-col-resize flex-shrink-0 transition-colors ${
+            isDraggingAI ? 'bg-blue-500' : 'bg-transparent hover:bg-blue-500'
           }`}
         />
 
@@ -416,6 +441,10 @@ export default function CraftPage() {
             language="EN"
             referenceName={refs.selectedReferenceId ? refs.references.find(r => r.id === refs.selectedReferenceId)?.title : undefined}
             documentName={docs.activeDocumentId ? docs.openDocuments.find(d => d.id === docs.activeDocumentId)?.title : undefined}
+            theme={theme}
+            pendingModifications={pendingModifications}
+            onAcceptChanges={handleAcceptChanges}
+            onRejectChanges={handleRejectChanges}
           />
         </div>
       </div>
