@@ -110,6 +110,20 @@ export default function DocumentEditor({
     }
   }, [content, editor, isInitialized])
 
+  // Clear highlights when selections are removed
+  useEffect(() => {
+    if (editor && isInitialized && selections.length === 0) {
+      editor.commands.unsetHighlight()
+    }
+  }, [selections, editor, isInitialized])
+
+  // Clear highlights when pending modifications are cleared (after accept/reject)
+  useEffect(() => {
+    if (editor && isInitialized && pendingModifications.length === 0) {
+      editor.commands.unsetHighlight()
+    }
+  }, [pendingModifications, editor, isInitialized])
+
   // Calculate button position based on highlighted text
   useEffect(() => {
     if (pendingModifications.length > 0 && containerRef.current) {
