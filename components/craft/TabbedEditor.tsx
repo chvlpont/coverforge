@@ -14,6 +14,9 @@ interface TabbedEditorProps {
   onTextSelect: (text: string) => void
   selections: { id: string; text: string }[]
   onRemoveSelection: (id: string) => void
+  pendingModifications: { id: string; original: string; modified: string }[]
+  onAcceptChanges: () => void
+  onRejectChanges: () => void
 }
 
 export default function TabbedEditor({
@@ -26,6 +29,9 @@ export default function TabbedEditor({
   onTextSelect,
   selections,
   onRemoveSelection,
+  pendingModifications,
+  onAcceptChanges,
+  onRejectChanges,
 }: TabbedEditorProps) {
   // Auto-select first document if none selected
   useEffect(() => {
@@ -79,6 +85,9 @@ export default function TabbedEditor({
             onTextSelect={onTextSelect}
             selections={selections}
             onRemoveSelection={onRemoveSelection}
+            pendingModifications={pendingModifications}
+            onAcceptChanges={onAcceptChanges}
+            onRejectChanges={onRejectChanges}
           />
         )}
       </div>
