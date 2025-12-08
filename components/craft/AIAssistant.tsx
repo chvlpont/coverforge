@@ -31,7 +31,6 @@ export default function AIAssistant({
   documentName,
 }: AIAssistantProps) {
   const [instruction, setInstruction] = useState('')
-  const [aiResponses, setAIResponses] = useState<{ original: string; modified: string }[]>([])
   const [loading, setLoading] = useState(false)
 
   const handleAskAI = async () => {
@@ -64,21 +63,16 @@ export default function AIAssistant({
         })
       )
 
-      setAIResponses(modifications)
+      // Directly apply changes instead of showing suggestions
+      onApplyChanges(modifications)
+      setInstruction('')
     } catch (error: any) {
-      setAIResponses([{ original: '', modified: 'Error: ' + error.message }])
+      console.error('AI modification error:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleApply = () => {
-    if (aiResponses.length > 0) {
-      onApplyChanges(aiResponses)
-      setAIResponses([])
-      setInstruction('')
-    }
-  }
 
   return (
     <div className="h-full bg-dark-800 flex flex-col">
@@ -120,33 +114,6 @@ export default function AIAssistant({
         {selections.length === 0 && (
           <div className="text-dark-400 text-sm text-center py-8">
             Select text in the document to get started
-          </div>
-        )}
-
-        {/* AI Responses */}
-        {aiResponses.length > 0 && (
-          <div className="space-y-3">
-            <div className="text-xs text-primary-400 font-medium">
-              AI Suggestions ({aiResponses.length}):
-            </div>
-            {aiResponses.map((response, index) => (
-              <div
-                key={index}
-                className="bg-primary-900/20 border border-primary-700 rounded-lg p-3"
-              >
-                <div className="text-sm text-white whitespace-pre-wrap">
-                  {response.modified}
-                </div>
-              </div>
-            ))}
-
-            {/* Apply button inside scrollable area */}
-            <button
-              onClick={handleApply}
-              className="w-full bg-accent-600 hover:bg-accent-700 text-white rounded-lg py-2.5 px-4 text-sm font-medium transition-colors shadow-lg"
-            >
-              Apply All Changes
-            </button>
           </div>
         )}
       </div>
