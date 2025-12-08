@@ -1,43 +1,25 @@
 'use client'
 
 import { useRef, useEffect, useState } from 'react'
-import { Document, Reference } from '@/lib/types/database'
 import DocumentsList from './DocumentsList'
 import ReferencesList from './ReferencesList'
-import { useTheme } from '@/contexts/ThemeContext'
+import { useAppStore } from '@/store/useAppStore'
 
-interface SidebarProps {
-  content: string
-  onContentChange: (content: string) => void
-  isCollapsed: boolean
-  onToggleCollapse: () => void
-  documents: Document[]
-  onSelectDocument: (documentId: string) => void
-  onCreateDocument: () => void
-  width: number
-  references: Reference[]
-  selectedReferenceId: string | null
-  onSelectReference: (referenceId: string) => void
-  onCreateReference: () => void
-  onUpdateReferenceTitle: (referenceId: string, title: string) => void
-}
+export default function Sidebar() {
+  const {
+    theme,
+    isSidebarCollapsed,
+    toggleSidebar,
+    sidebarWidth,
+    selectedReferenceId,
+    referenceContent,
+    updateReferenceContent,
+    references,
+    selectReference,
+    updateReferenceTitle,
+    saveReferenceContent,
+  } = useAppStore()
 
-export default function Sidebar({
-  content,
-  onContentChange,
-  isCollapsed,
-  onToggleCollapse,
-  documents,
-  onSelectDocument,
-  onCreateDocument,
-  width,
-  references,
-  selectedReferenceId,
-  onSelectReference,
-  onCreateReference,
-  onUpdateReferenceTitle,
-}: SidebarProps) {
-  const { theme } = useTheme()
   const editorRef = useRef<HTMLDivElement>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [activeTab, setActiveTab] = useState<'reference' | 'documents'>('reference')
@@ -45,6 +27,17 @@ export default function Sidebar({
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [editedTitle, setEditedTitle] = useState('')
   const placeholder = "Add reference information here (job description, company info, etc.)..."
+
+  // Auto-save reference content
+  useEffect(() => {
+    if (!selectedReferenceId || !referenceContent) return
+
+    const timer = setTimeout(() => {
+      saveReferenceContent()
+    }, 2000)
+
+    return () => clearTimeout(timer)
+  }, [referenceContent, selectedReferenceId, saveReferenceContent])
 
   // Show editor when a reference is selected
   useEffect(() => {
@@ -57,7 +50,7 @@ export default function Sidebar({
 
   // Handle reference selection
   const handleSelectReference = (referenceId: string) => {
-    onSelectReference(referenceId)
+    selectReference(referenceId)
     setShowReferenceEditor(true)
   }
 
@@ -76,7 +69,7 @@ export default function Sidebar({
 
   const handleTitleBlur = () => {
     if (selectedReferenceId && editedTitle.trim()) {
-      onUpdateReferenceTitle(selectedReferenceId, editedTitle.trim())
+      updateReferenceTitle(selectedReferenceId, editedTitle.trim())
     }
     setIsEditingTitle(false)
   }
@@ -85,7 +78,7 @@ export default function Sidebar({
     if (e.key === 'Enter') {
       e.preventDefault()
       if (selectedReferenceId && editedTitle.trim()) {
-        onUpdateReferenceTitle(selectedReferenceId, editedTitle.trim())
+        updateReferenceTitle(selectedReferenceId, editedTitle.trim())
       }
       setIsEditingTitle(false)
     } else if (e.key === 'Escape') {
@@ -96,18 +89,18 @@ export default function Sidebar({
   // Update editor content when content changes (but not during editing)
   useEffect(() => {
     if (editorRef.current && !isEditing) {
-      const displayContent = content || placeholder
+      const displayContent = referenceContent || placeholder
       editorRef.current.textContent = displayContent
       const placeholderClass = theme === 'dark' ? 'text-dark-400' : 'text-gray-400'
-      editorRef.current.classList.toggle(placeholderClass, !content)
+      editorRef.current.classList.toggle(placeholderClass, !referenceContent)
     }
-  }, [content, theme])
+  }, [referenceContent, theme, isEditing, placeholder])
 
   const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
     setIsEditing(true)
     const newContent = e.currentTarget.textContent || ''
     const actualContent = newContent === placeholder ? '' : newContent
-    onContentChange(actualContent)
+    updateReferenceContent(actualContent)
     setTimeout(() => setIsEditing(false), 100)
   }
 
@@ -130,18 +123,18 @@ export default function Sidebar({
   return (
     <div
       className={`h-full flex flex-col flex-shrink-0 ${theme === 'dark' ? 'bg-dark-850' : 'bg-gray-100'}`}
-      style={{ width: isCollapsed ? '48px' : `${width}px` }}
+      style={{ width: isSidebarCollapsed ? '48px' : `${sidebarWidth}px` }}
     >
       {/* Header */}
       <div className={`flex-shrink-0 ${theme === 'dark' ? 'bg-dark-900' : 'bg-gray-200'}`}>
         <div className="px-4 py-3 flex items-center justify-end">
           <button
-            onClick={onToggleCollapse}
+            onClick={toggleSidebar}
             className={`transition-colors p-1 ${theme === 'dark' ? 'text-dark-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
-            title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              {isCollapsed ? (
+              {isSidebarCollapsed ? (
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               ) : (
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -151,7 +144,7 @@ export default function Sidebar({
         </div>
 
         {/* Tabs */}
-        {!isCollapsed && (
+        {!isSidebarCollapsed && (
           <div className="flex mt-2">
             <button
               onClick={() => setActiveTab('reference')}
@@ -186,7 +179,7 @@ export default function Sidebar({
       </div>
 
       {/* Content */}
-      {!isCollapsed && (
+      {!isSidebarCollapsed && (
         <>
           {activeTab === 'reference' ? (
             <>
@@ -197,7 +190,7 @@ export default function Sidebar({
                     <button
                       onClick={() => {
                         setShowReferenceEditor(false)
-                        onSelectReference('')
+                        selectReference('')
                       }}
                       className={`flex items-center gap-2 text-sm transition-colors ${theme === 'dark' ? 'text-dark-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
                     >
@@ -244,19 +237,11 @@ export default function Sidebar({
                   </div>
                 </div>
               ) : (
-                <ReferencesList
-                  references={references}
-                  onSelectReference={handleSelectReference}
-                  onCreateReference={onCreateReference}
-                />
+                <ReferencesList />
               )}
             </>
           ) : (
-            <DocumentsList
-              documents={documents}
-              onSelectDocument={onSelectDocument}
-              onCreateDocument={onCreateDocument}
-            />
+            <DocumentsList />
           )}
         </>
       )}

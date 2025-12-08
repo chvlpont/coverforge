@@ -1,51 +1,46 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Loader from '@/components/Loader'
 import TabbedEditor from '@/components/craft/TabbedEditor'
 import AIAssistant from '@/components/craft/AIAssistant'
 import Sidebar from '@/components/craft/Sidebar'
-import { useDocuments } from './hooks/useDocuments'
-import { useReferences } from './hooks/useReferences'
-import { ThemeProvider, useTheme } from '@/contexts/ThemeContext'
-import toast from 'react-hot-toast'
+import { useAppStore } from '@/store/useAppStore'
 
 function CraftPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = createClient()
-  const { theme, toggleTheme } = useTheme()
 
   const [loading, setLoading] = useState(true)
-  const [user, setUser] = useState<any>(null)
-  const [selectedText, setSelectedText] = useState('')
-  const [selections, setSelections] = useState<{ id: string; text: string }[]>([])
-  const [pendingModifications, setPendingModifications] = useState<{ id: string; original: string; modified: string }[]>([])
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [editedTitle, setEditedTitle] = useState('')
-  const [sidebarWidth, setSidebarWidth] = useState(320)
-  const [aiAssistantWidth, setAIAssistantWidth] = useState(384)
   const [isDraggingSidebar, setIsDraggingSidebar] = useState(false)
   const [isDraggingAI, setIsDraggingAI] = useState(false)
   const [dragStartX, setDragStartX] = useState(0)
   const [dragStartWidth, setDragStartWidth] = useState(0)
 
-  const docs = useDocuments(user)
-  const refs = useReferences(user)
-
-  // Autosave reference content
-  useEffect(() => {
-    if (!refs.selectedReferenceId || !refs.referenceContent) return
-
-    const timer = setTimeout(() => {
-      refs.saveContent()
-    }, 2000)
-
-    return () => clearTimeout(timer)
-  }, [refs.referenceContent, refs.selectedReferenceId])
+  // Get everything from the store
+  const {
+    theme,
+    toggleTheme,
+    user,
+    setUser,
+    documents,
+    openDocuments,
+    activeDocumentId,
+    fetchDocuments,
+    setActiveDocumentId,
+    fetchReferences,
+    isSidebarCollapsed,
+    toggleSidebar,
+    sidebarWidth,
+    setSidebarWidth,
+    aiAssistantWidth,
+    setAIAssistantWidth,
+  } = useAppStore()
 
   // Check auth
   useEffect(() => {
@@ -69,175 +64,31 @@ function CraftPageContent() {
     })
 
     return () => subscription.unsubscribe()
-  }, [router, supabase])
+  }, [router, supabase, setUser])
+
+  // Fetch data when user is set
+  useEffect(() => {
+    if (user) {
+      fetchDocuments()
+      fetchReferences()
+    }
+  }, [user, fetchDocuments, fetchReferences])
 
   // Auto-open document from URL
   useEffect(() => {
     const docId = searchParams.get('doc')
-    if (docId && docs.documents.length > 0) {
-      const doc = docs.documents.find(d => d.id === docId)
-      if (doc && !docs.openDocuments.find(d => d.id === docId)) {
-        docs.openDocument(docId)
+    if (docId && documents.length > 0) {
+      const doc = documents.find(d => d.id === docId)
+      if (doc && !openDocuments.find(d => d.id === docId)) {
+        useAppStore.getState().openDocument(docId)
       }
     }
-  }, [searchParams, docs.documents])
-
-  // Handle text selection - auto-add to selections
-  const handleTextSelect = (text: string) => {
-    if (!text.trim()) return
-
-    // Check if this text is already in selections
-    const alreadyExists = selections.some(s => s.text === text)
-    if (alreadyExists) return
-
-    const newSelection = {
-      id: Date.now().toString(),
-      text: text,
-    }
-
-    setSelections([...selections, newSelection])
-    setSelectedText(text)
-  }
-
-  // Handle add selection (kept for compatibility, but now handled by handleTextSelect)
-  const handleAddSelection = () => {
-    // This is now handled automatically in handleTextSelect
-  }
-
-  // Handle remove selection
-  const handleRemoveSelection = (id: string) => {
-    setSelections(selections.filter((s) => s.id !== id))
-  }
-
-  // Helper to strip HTML tags
-  const stripHtml = (html: string): string => {
-    const tmp = document.createElement('div')
-    tmp.innerHTML = html
-    return tmp.textContent || tmp.innerText || ''
-  }
-
-  // Handle apply AI changes - now applies as preview with pending modifications
-  const handleApplyChanges = (modifications: { original: string; modified: string }[]) => {
-    if (!docs.activeDocumentId) return
-
-    let newContent = docs.documentContents[docs.activeDocumentId] || ''
-
-    // Check if content is HTML or plain text
-    const isHtmlContent = newContent.includes('<') && newContent.includes('>')
-
-    if (isHtmlContent) {
-      // For HTML content, we need to be more careful
-      // Create a temporary div to manipulate the HTML
-      const tempDiv = document.createElement('div')
-      tempDiv.innerHTML = newContent
-
-      modifications.forEach((mod) => {
-        // Get all text nodes
-        const walker = document.createTreeWalker(
-          tempDiv,
-          NodeFilter.SHOW_TEXT,
-          null
-        )
-
-        const textNodes: Text[] = []
-        let node
-        while ((node = walker.nextNode())) {
-          textNodes.push(node as Text)
-        }
-
-        // Find and replace in text nodes
-        textNodes.forEach((textNode) => {
-          if (textNode.nodeValue && textNode.nodeValue.includes(mod.original)) {
-            textNode.nodeValue = textNode.nodeValue.replace(mod.original, mod.modified)
-          }
-        })
-      })
-
-      newContent = tempDiv.innerHTML
-    } else {
-      // For plain text, simple replacement works
-      modifications.forEach((mod) => {
-        newContent = newContent.replace(mod.original, mod.modified)
-      })
-    }
-
-    // Apply changes as preview
-    docs.updateContent(docs.activeDocumentId, newContent)
-
-    // Store pending modifications with IDs
-    const modificationsWithIds = modifications.map((mod) => ({
-      id: Date.now().toString() + Math.random().toString(36),
-      original: mod.original,
-      modified: mod.modified,
-    }))
-    setPendingModifications(modificationsWithIds)
-
-    // Don't clear selections yet - keep highlights for accept/reject buttons
-    // setSelections([])
-    // setSelectedText('')
-  }
-
-  // Accept changes - keep the modifications
-  const handleAcceptChanges = () => {
-    setPendingModifications([])
-    setSelections([])
-    setSelectedText('')
-    toast.success('Changes accepted!')
-  }
-
-  // Reject changes - revert to original
-  const handleRejectChanges = () => {
-    if (!docs.activeDocumentId || pendingModifications.length === 0) return
-
-    let newContent = docs.documentContents[docs.activeDocumentId] || ''
-
-    // Check if content is HTML or plain text
-    const isHtmlContent = newContent.includes('<') && newContent.includes('>')
-
-    if (isHtmlContent) {
-      const tempDiv = document.createElement('div')
-      tempDiv.innerHTML = newContent
-
-      // Revert: replace modified back to original
-      pendingModifications.forEach((mod) => {
-        const walker = document.createTreeWalker(
-          tempDiv,
-          NodeFilter.SHOW_TEXT,
-          null
-        )
-
-        const textNodes: Text[] = []
-        let node
-        while ((node = walker.nextNode())) {
-          textNodes.push(node as Text)
-        }
-
-        textNodes.forEach((textNode) => {
-          if (textNode.nodeValue && textNode.nodeValue.includes(mod.modified)) {
-            textNode.nodeValue = textNode.nodeValue.replace(mod.modified, mod.original)
-          }
-        })
-      })
-
-      newContent = tempDiv.innerHTML
-    } else {
-      // For plain text, simple replacement works
-      pendingModifications.forEach((mod) => {
-        newContent = newContent.replace(mod.modified, mod.original)
-      })
-    }
-
-    docs.updateContent(docs.activeDocumentId, newContent)
-    setPendingModifications([])
-    setSelections([])
-    setSelectedText('')
-    toast.success('Changes rejected!')
-  }
+  }, [searchParams, documents, openDocuments])
 
   // Handle title edit
   const handleTitleClick = () => {
-    if (docs.activeDocumentId) {
-      const activeDoc = docs.openDocuments.find(d => d.id === docs.activeDocumentId)
+    if (activeDocumentId) {
+      const activeDoc = openDocuments.find(d => d.id === activeDocumentId)
       if (activeDoc) {
         setEditedTitle(activeDoc.title)
         setIsEditingTitle(true)
@@ -246,8 +97,8 @@ function CraftPageContent() {
   }
 
   const handleTitleBlur = () => {
-    if (docs.activeDocumentId && editedTitle.trim()) {
-      docs.updateTitle(docs.activeDocumentId, editedTitle.trim())
+    if (activeDocumentId && editedTitle.trim()) {
+      useAppStore.getState().updateDocumentTitle(activeDocumentId, editedTitle.trim())
     }
     setIsEditingTitle(false)
   }
@@ -255,8 +106,8 @@ function CraftPageContent() {
   const handleTitleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault()
-      if (docs.activeDocumentId && editedTitle.trim()) {
-        docs.updateTitle(docs.activeDocumentId, editedTitle.trim())
+      if (activeDocumentId && editedTitle.trim()) {
+        useAppStore.getState().updateDocumentTitle(activeDocumentId, editedTitle.trim())
       }
       setIsEditingTitle(false)
     } else if (e.key === 'Escape') {
@@ -265,8 +116,8 @@ function CraftPageContent() {
   }
 
   // Get current title
-  const currentTitle = docs.activeDocumentId
-    ? docs.openDocuments.find(d => d.id === docs.activeDocumentId)?.title || 'Craft'
+  const currentTitle = activeDocumentId
+    ? openDocuments.find(d => d.id === activeDocumentId)?.title || 'Craft'
     : 'Craft'
 
   // Handle sidebar resize
@@ -314,7 +165,7 @@ function CraftPageContent() {
       document.body.style.cursor = ''
       document.body.style.userSelect = ''
     }
-  }, [isDraggingSidebar, isDraggingAI, dragStartX, dragStartWidth])
+  }, [isDraggingSidebar, isDraggingAI, dragStartX, dragStartWidth, setSidebarWidth, setAIAssistantWidth])
 
   if (loading) return <Loader />
 
@@ -337,8 +188,8 @@ function CraftPageContent() {
           ) : (
             <h1
               onClick={handleTitleClick}
-              className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} ${docs.activeDocumentId ? `cursor-pointer px-2 py-1 rounded transition-colors ${theme === 'dark' ? 'hover:bg-dark-700' : 'hover:bg-gray-100'}` : ''}`}
-              title={docs.activeDocumentId ? 'Click to edit' : ''}
+              className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} ${activeDocumentId ? `cursor-pointer px-2 py-1 rounded transition-colors ${theme === 'dark' ? 'hover:bg-dark-700' : 'hover:bg-gray-100'}` : ''}`}
+              title={activeDocumentId ? 'Click to edit' : ''}
             >
               {currentTitle}
             </h1>
@@ -366,21 +217,7 @@ function CraftPageContent() {
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left: Sidebar */}
-        <Sidebar
-          content={refs.referenceContent}
-          onContentChange={refs.updateContent}
-          isCollapsed={isSidebarCollapsed}
-          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          documents={docs.documents}
-          onSelectDocument={docs.openDocument}
-          onCreateDocument={docs.createDocument}
-          width={sidebarWidth}
-          references={refs.references}
-          selectedReferenceId={refs.selectedReferenceId}
-          onSelectReference={refs.selectReference}
-          onCreateReference={refs.createReference}
-          onUpdateReferenceTitle={refs.updateTitle}
-        />
+        <Sidebar />
 
         {/* Sidebar Resize Handle */}
         {!isSidebarCollapsed && (
@@ -393,7 +230,7 @@ function CraftPageContent() {
         )}
 
         {/* Center: Tabbed Editor or Empty State */}
-        {docs.openDocuments.length === 0 ? (
+        {openDocuments.length === 0 ? (
           <div className={`flex-1 flex items-center justify-center ${theme === 'dark' ? 'bg-dark-900' : 'bg-white'}`}>
             <div className={`text-center ${theme === 'dark' ? 'text-dark-400' : 'text-gray-500'}`}>
               <svg className={`w-24 h-24 mx-auto mb-4 ${theme === 'dark' ? 'text-dark-600' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -404,20 +241,7 @@ function CraftPageContent() {
             </div>
           </div>
         ) : (
-          <TabbedEditor
-            openDocuments={docs.openDocuments}
-            activeDocumentId={docs.activeDocumentId}
-            documentContents={docs.documentContents}
-            onDocumentContentChange={docs.updateContent}
-            onActiveDocumentChange={docs.setActiveDocumentId}
-            onCloseDocument={docs.closeDocument}
-            onTextSelect={handleTextSelect}
-            selections={selections}
-            onRemoveSelection={handleRemoveSelection}
-            pendingModifications={pendingModifications}
-            onAcceptChanges={handleAcceptChanges}
-            onRejectChanges={handleRejectChanges}
-          />
+          <TabbedEditor />
         )}
 
         {/* AI Assistant Resize Handle */}
@@ -429,22 +253,7 @@ function CraftPageContent() {
         />
 
         {/* Right: AI Assistant */}
-        <div style={{ width: aiAssistantWidth }} className="flex-shrink-0">
-          <AIAssistant
-            selectedText={selectedText}
-            selections={selections}
-            onAddSelection={handleAddSelection}
-            onRemoveSelection={handleRemoveSelection}
-            onApplyChanges={handleApplyChanges}
-            referenceContent={refs.referenceContent}
-            language="EN"
-            referenceName={refs.selectedReferenceId ? refs.references.find(r => r.id === refs.selectedReferenceId)?.title : undefined}
-            documentName={docs.activeDocumentId ? docs.openDocuments.find(d => d.id === docs.activeDocumentId)?.title : undefined}
-            pendingModifications={pendingModifications}
-            onAcceptChanges={handleAcceptChanges}
-            onRejectChanges={handleRejectChanges}
-          />
-        </div>
+        <AIAssistant />
       </div>
     </div>
   )
@@ -452,8 +261,8 @@ function CraftPageContent() {
 
 export default function CraftPage() {
   return (
-    <ThemeProvider>
+    <Suspense fallback={<Loader />}>
       <CraftPageContent />
-    </ThemeProvider>
+    </Suspense>
   )
 }

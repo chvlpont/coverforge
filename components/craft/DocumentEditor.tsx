@@ -9,37 +9,24 @@ import TextAlign from '@tiptap/extension-text-align'
 import Highlight from '@tiptap/extension-highlight'
 import { FontSize } from '@/lib/tiptap-extensions'
 import FormatToolbar from './FormatToolbar'
-import { useTheme } from '@/contexts/ThemeContext'
+import { useAppStore } from '@/store/useAppStore'
 
-interface TextSelection {
-  id: string
-  text: string
-}
+export default function DocumentEditor() {
+  const {
+    theme,
+    activeDocumentId,
+    documentContents,
+    updateDocumentContent,
+    addSelection,
+    selections,
+    clearSelections,
+    pendingModifications,
+  } = useAppStore()
 
-interface DocumentEditorProps {
-  content: string
-  onContentChange: (content: string) => void
-  onTextSelect: (selectedText: string) => void
-  selections: TextSelection[]
-  onRemoveSelection: (id: string) => void
-  pendingModifications: { id: string; original: string; modified: string }[]
-  onAcceptChanges: () => void
-  onRejectChanges: () => void
-}
-
-export default function DocumentEditor({
-  content,
-  onContentChange,
-  onTextSelect,
-  selections,
-  onRemoveSelection,
-  pendingModifications,
-  onAcceptChanges,
-  onRejectChanges,
-}: DocumentEditorProps) {
-  const { theme } = useTheme()
   const [isInitialized, setIsInitialized] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
+
+  const content = activeDocumentId ? documentContents[activeDocumentId] || '' : ''
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -66,7 +53,6 @@ export default function DocumentEditor({
       },
       handleDOMEvents: {
         mouseup: (view, event) => {
-          // Use longer timeout to ensure selection is complete
           setTimeout(() => {
             const { from, to } = view.state.selection
             const text = view.state.doc.textBetween(from, to, ' ')
@@ -80,16 +66,23 @@ export default function DocumentEditor({
                   view.state.schema.marks.highlight.create()
                 )
               )
-              onTextSelect(text)
+              addSelection(text)
             }
-          }, 50) // Increased timeout to allow selection to settle
-          // Don't prevent default to allow normal selection behavior
+          }, 50)
         },
       },
     },
-    onUpdate: ({ editor }) => {
+    onUpdate: ({ editor, transaction }) => {
       const html = editor.getHTML()
-      onContentChange(html)
+      if (activeDocumentId) {
+        updateDocumentContent(activeDocumentId, html)
+      }
+
+      // Detect user-initiated changes (not programmatic)
+      if (transaction.steps.length > 0 && transaction.docChanged) {
+        // User is editing - clear selections and pending modifications
+        clearSelections()
+      }
     },
   })
 
@@ -99,7 +92,7 @@ export default function DocumentEditor({
       editor.commands.setContent(content || '')
       setIsInitialized(true)
     }
-  }, [editor, isInitialized])
+  }, [editor, isInitialized, content])
 
   // Update editor content when content changes externally (e.g., from AI)
   useEffect(() => {
@@ -114,7 +107,6 @@ export default function DocumentEditor({
   // Clear highlights when selections are removed
   useEffect(() => {
     if (editor && isInitialized && selections.length === 0) {
-      // Use chain with focus and run to ensure the command executes
       const { state } = editor
       const tr = state.tr
 
@@ -138,7 +130,6 @@ export default function DocumentEditor({
   // Clear highlights when pending modifications are cleared (after accept/reject)
   useEffect(() => {
     if (editor && isInitialized && pendingModifications.length === 0) {
-      // Use chain with focus and run to ensure the command executes
       const { state } = editor
       const tr = state.tr
 

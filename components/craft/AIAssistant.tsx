@@ -1,45 +1,36 @@
 'use client'
 
 import { useState } from 'react'
-import { useTheme } from '@/contexts/ThemeContext'
+import { useAppStore } from '@/store/useAppStore'
 
-interface TextSelection {
-  id: string
-  text: string
-}
+export default function AIAssistant() {
+  const {
+    theme,
+    selectedText,
+    selections,
+    removeSelection,
+    applyChanges,
+    pendingModifications,
+    acceptChanges,
+    rejectChanges,
+    references,
+    selectedReferenceId,
+    referenceContent,
+    openDocuments,
+    activeDocumentId,
+  } = useAppStore()
 
-interface AIAssistantProps {
-  selectedText: string
-  selections: TextSelection[]
-  onAddSelection: () => void
-  onRemoveSelection: (id: string) => void
-  onApplyChanges: (modifications: { original: string; modified: string }[]) => void
-  referenceContent: string
-  language: string
-  referenceName?: string
-  documentName?: string
-  pendingModifications: { id: string; original: string; modified: string }[]
-  onAcceptChanges: () => void
-  onRejectChanges: () => void
-}
-
-export default function AIAssistant({
-  selectedText,
-  selections,
-  onAddSelection,
-  onRemoveSelection,
-  onApplyChanges,
-  referenceContent,
-  language,
-  referenceName,
-  documentName,
-  pendingModifications,
-  onAcceptChanges,
-  onRejectChanges,
-}: AIAssistantProps) {
-  const { theme } = useTheme()
   const [instruction, setInstruction] = useState('')
   const [loading, setLoading] = useState(false)
+
+  // Get reference and document names
+  const referenceName = selectedReferenceId
+    ? references.find(r => r.id === selectedReferenceId)?.title
+    : undefined
+
+  const documentName = activeDocumentId
+    ? openDocuments.find(d => d.id === activeDocumentId)?.title
+    : undefined
 
   const handleAskAI = async () => {
     if (selections.length === 0 || !instruction.trim()) return
@@ -57,7 +48,7 @@ export default function AIAssistant({
               originalText: selection.text,
               instruction: instruction,
               referenceContext: referenceContent,
-              language: language,
+              language: 'EN',
             }),
           })
 
@@ -71,8 +62,8 @@ export default function AIAssistant({
         })
       )
 
-      // Directly apply changes instead of showing suggestions
-      onApplyChanges(modifications)
+      // Directly apply changes
+      applyChanges(modifications)
       setInstruction('')
     } catch (error: any) {
       console.error('AI modification error:', error)
@@ -81,9 +72,11 @@ export default function AIAssistant({
     }
   }
 
-
   return (
-    <div className={`h-full flex flex-col ${theme === 'dark' ? 'bg-dark-800' : 'bg-gray-100'}`}>
+    <div
+      style={{ width: useAppStore.getState().aiAssistantWidth }}
+      className={`flex-shrink-0 h-full flex flex-col ${theme === 'dark' ? 'bg-dark-800' : 'bg-gray-100'}`}
+    >
       {/* Header */}
       <div className={`px-6 py-4 ${theme === 'dark' ? 'bg-dark-900' : 'bg-gray-200'}`}>
         <h2 className={`text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>AI Assistant</h2>
@@ -106,7 +99,7 @@ export default function AIAssistant({
                   {selection.text}
                 </div>
                 <button
-                  onClick={() => onRemoveSelection(selection.id)}
+                  onClick={() => removeSelection(selection.id)}
                   className={`transition-colors flex-shrink-0 ${theme === 'dark' ? 'text-red-400 hover:text-red-300' : 'text-red-600 hover:text-red-700'}`}
                   title="Remove"
                 >
@@ -132,7 +125,7 @@ export default function AIAssistant({
         {pendingModifications.length > 0 && (
           <div className="flex items-center justify-end gap-2">
             <button
-              onClick={onAcceptChanges}
+              onClick={acceptChanges}
               className={`p-1.5 rounded transition-colors ${theme === 'dark' ? 'hover:bg-dark-700 text-emerald-400 hover:text-emerald-300' : 'hover:bg-gray-300 text-emerald-600 hover:text-emerald-700'}`}
               title="Accept changes"
             >
@@ -141,7 +134,7 @@ export default function AIAssistant({
               </svg>
             </button>
             <button
-              onClick={onRejectChanges}
+              onClick={rejectChanges}
               className={`p-1.5 rounded transition-colors ${theme === 'dark' ? 'hover:bg-dark-700 text-rose-400 hover:text-rose-300' : 'hover:bg-gray-300 text-rose-600 hover:text-rose-700'}`}
               title="Reject changes"
             >

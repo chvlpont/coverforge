@@ -1,25 +1,15 @@
 'use client'
 
-import { Document } from '@/lib/types/database'
-import { useTheme } from '@/contexts/ThemeContext'
+import { useAppStore } from '@/store/useAppStore'
 
-interface DocumentsListProps {
-  documents: Document[]
-  onSelectDocument: (documentId: string) => void
-  onCreateDocument: () => void
-}
+export default function DocumentsList() {
+  const { theme, documents, createDocument, openDocument } = useAppStore()
 
-export default function DocumentsList({
-  documents,
-  onSelectDocument,
-  onCreateDocument,
-}: DocumentsListProps) {
-  const { theme } = useTheme()
   return (
     <div className="flex-1 overflow-y-auto p-4">
       {/* Create New Button */}
       <button
-        onClick={onCreateDocument}
+        onClick={createDocument}
         className={`w-full rounded-lg px-4 py-3 text-sm font-medium transition-colors mb-4 flex items-center justify-center gap-2 ${theme === 'dark' ? 'bg-primary-600 hover:bg-primary-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-900'}`}
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -39,7 +29,7 @@ export default function DocumentsList({
           {documents.map((doc) => (
             <button
               key={doc.id}
-              onClick={() => onSelectDocument(doc.id)}
+              onClick={() => openDocument(doc.id)}
               className={`w-full text-left rounded-lg px-4 py-3 text-sm transition-colors border hover:border-primary-500 cursor-pointer ${theme === 'dark' ? 'bg-dark-800 hover:bg-dark-750 border-dark-700' : 'bg-white hover:bg-gray-50 border-gray-200'}`}
             >
               <div className={`font-medium truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{doc.title}</div>

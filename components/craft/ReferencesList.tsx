@@ -1,25 +1,15 @@
 'use client'
 
-import { Reference } from '@/lib/types/database'
-import { useTheme } from '@/contexts/ThemeContext'
+import { useAppStore } from '@/store/useAppStore'
 
-interface ReferencesListProps {
-  references: Reference[]
-  onSelectReference: (referenceId: string) => void
-  onCreateReference: () => void
-}
+export default function ReferencesList() {
+  const { theme, references, createReference, selectReference } = useAppStore()
 
-export default function ReferencesList({
-  references,
-  onSelectReference,
-  onCreateReference,
-}: ReferencesListProps) {
-  const { theme } = useTheme()
   return (
     <div className="flex-1 overflow-y-auto p-4">
       {/* Create New Button */}
       <button
-        onClick={onCreateReference}
+        onClick={createReference}
         className={`w-full rounded-lg px-4 py-3 text-sm font-medium transition-colors mb-4 flex items-center justify-center gap-2 ${theme === 'dark' ? 'bg-primary-600 hover:bg-primary-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-900'}`}
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -39,7 +29,7 @@ export default function ReferencesList({
           {references.map((ref) => (
             <button
               key={ref.id}
-              onClick={() => onSelectReference(ref.id)}
+              onClick={() => selectReference(ref.id)}
               className={`w-full text-left rounded-lg px-4 py-3 text-sm transition-colors border hover:border-primary-500 cursor-pointer ${theme === 'dark' ? 'bg-dark-800 hover:bg-dark-750 border-dark-700' : 'bg-white hover:bg-gray-50 border-gray-200'}`}
             >
               <div className={`font-medium truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{ref.title}</div>

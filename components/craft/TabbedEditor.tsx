@@ -1,46 +1,24 @@
 'use client'
 
 import { useEffect } from 'react'
-import { Document } from '@/lib/types/database'
 import DocumentEditor from './DocumentEditor'
-import { useTheme } from '@/contexts/ThemeContext'
+import { useAppStore } from '@/store/useAppStore'
 
-interface TabbedEditorProps {
-  openDocuments: Document[]
-  activeDocumentId: string | null
-  documentContents: { [key: string]: string }
-  onDocumentContentChange: (documentId: string, content: string) => void
-  onActiveDocumentChange: (documentId: string) => void
-  onCloseDocument: (documentId: string) => void
-  onTextSelect: (text: string) => void
-  selections: { id: string; text: string }[]
-  onRemoveSelection: (id: string) => void
-  pendingModifications: { id: string; original: string; modified: string }[]
-  onAcceptChanges: () => void
-  onRejectChanges: () => void
-}
+export default function TabbedEditor() {
+  const {
+    theme,
+    openDocuments,
+    activeDocumentId,
+    setActiveDocumentId,
+    closeDocument,
+  } = useAppStore()
 
-export default function TabbedEditor({
-  openDocuments,
-  activeDocumentId,
-  documentContents,
-  onDocumentContentChange,
-  onActiveDocumentChange,
-  onCloseDocument,
-  onTextSelect,
-  selections,
-  onRemoveSelection,
-  pendingModifications,
-  onAcceptChanges,
-  onRejectChanges,
-}: TabbedEditorProps) {
-  const { theme } = useTheme()
   // Auto-select first document if none selected
   useEffect(() => {
     if (!activeDocumentId && openDocuments.length > 0) {
-      onActiveDocumentChange(openDocuments[0].id)
+      setActiveDocumentId(openDocuments[0].id)
     }
-  }, [activeDocumentId, openDocuments, onActiveDocumentChange])
+  }, [activeDocumentId, openDocuments, setActiveDocumentId])
 
   const activeDocument = activeDocumentId
     ? openDocuments.find(d => d.id === activeDocumentId)
@@ -48,7 +26,7 @@ export default function TabbedEditor({
 
   const handleCloseTab = (docId: string, e: React.MouseEvent) => {
     e.stopPropagation()
-    onCloseDocument(docId)
+    closeDocument(docId)
   }
 
   return (
@@ -58,7 +36,7 @@ export default function TabbedEditor({
         {openDocuments.map((doc) => (
           <button
             key={doc.id}
-            onClick={() => onActiveDocumentChange(doc.id)}
+            onClick={() => setActiveDocumentId(doc.id)}
             className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 flex-shrink-0 ${
               activeDocumentId === doc.id
                 ? theme === 'dark'
@@ -84,18 +62,7 @@ export default function TabbedEditor({
 
       {/* Editor Content */}
       <div className="flex-1 overflow-hidden">
-        {activeDocument && (
-          <DocumentEditor
-            content={documentContents[activeDocument.id] || ''}
-            onContentChange={(content) => onDocumentContentChange(activeDocument.id, content)}
-            onTextSelect={onTextSelect}
-            selections={selections}
-            onRemoveSelection={onRemoveSelection}
-            pendingModifications={pendingModifications}
-            onAcceptChanges={onAcceptChanges}
-            onRejectChanges={onRejectChanges}
-          />
-        )}
+        {activeDocument && <DocumentEditor />}
       </div>
     </div>
   )

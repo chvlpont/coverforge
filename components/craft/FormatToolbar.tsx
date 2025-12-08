@@ -15,7 +15,7 @@ import {
   Heading3,
   Type
 } from 'lucide-react'
-import { useTheme } from '@/contexts/ThemeContext'
+import { useAppStore } from '@/store/useAppStore'
 
 interface FormatToolbarProps {
   editor: Editor | null
@@ -52,7 +52,7 @@ const Divider = ({ theme = 'dark' }: { theme?: 'light' | 'dark' }) => (
 )
 
 export default function FormatToolbar({ editor }: FormatToolbarProps) {
-  const { theme } = useTheme()
+  const { theme } = useAppStore()
 
   if (!editor) {
     return null
