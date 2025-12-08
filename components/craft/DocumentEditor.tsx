@@ -66,6 +66,7 @@ export default function DocumentEditor({
       },
       handleDOMEvents: {
         mouseup: (view, event) => {
+          // Use longer timeout to ensure selection is complete
           setTimeout(() => {
             const { from, to } = view.state.selection
             const text = view.state.doc.textBetween(from, to, ' ')
@@ -81,8 +82,8 @@ export default function DocumentEditor({
               )
               onTextSelect(text)
             }
-          }, 10)
-          return false
+          }, 50) // Increased timeout to allow selection to settle
+          // Don't prevent default to allow normal selection behavior
         },
       },
     },
@@ -113,14 +114,48 @@ export default function DocumentEditor({
   // Clear highlights when selections are removed
   useEffect(() => {
     if (editor && isInitialized && selections.length === 0) {
-      editor.commands.unsetHighlight()
+      // Use chain with focus and run to ensure the command executes
+      const { state } = editor
+      const tr = state.tr
+
+      // Remove all highlight marks from the entire document
+      state.doc.descendants((node, pos) => {
+        if (node.marks.some(mark => mark.type.name === 'highlight')) {
+          node.marks.forEach(mark => {
+            if (mark.type.name === 'highlight') {
+              tr.removeMark(pos, pos + node.nodeSize, mark.type)
+            }
+          })
+        }
+      })
+
+      if (tr.docChanged) {
+        editor.view.dispatch(tr)
+      }
     }
   }, [selections, editor, isInitialized])
 
   // Clear highlights when pending modifications are cleared (after accept/reject)
   useEffect(() => {
     if (editor && isInitialized && pendingModifications.length === 0) {
-      editor.commands.unsetHighlight()
+      // Use chain with focus and run to ensure the command executes
+      const { state } = editor
+      const tr = state.tr
+
+      // Remove all highlight marks from the entire document
+      state.doc.descendants((node, pos) => {
+        if (node.marks.some(mark => mark.type.name === 'highlight')) {
+          node.marks.forEach(mark => {
+            if (mark.type.name === 'highlight') {
+              tr.removeMark(pos, pos + node.nodeSize, mark.type)
+            }
+          })
+        }
+      })
+
+      if (tr.docChanged) {
+        editor.view.dispatch(tr)
+      }
     }
   }, [pendingModifications, editor, isInitialized])
 
