@@ -52,7 +52,7 @@ export default function TabbedEditor({
   return (
     <div className="flex-1 flex flex-col">
       {/* Tabs */}
-      <div className="bg-dark-900 border-b border-dark-700 flex items-center overflow-x-auto">
+      <div className="bg-dark-900 flex items-center overflow-x-auto">
         {openDocuments.map((doc) => (
           <button
             key={doc.id}
