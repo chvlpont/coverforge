@@ -20,6 +20,7 @@ export default function CraftPage() {
   const [user, setUser] = useState<any>(null)
   const [selectedText, setSelectedText] = useState('')
   const [selections, setSelections] = useState<{ id: string; text: string }[]>([])
+  const [pendingModifications, setPendingModifications] = useState<{ id: string; original: string; modified: string }[]>([])
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [editedTitle, setEditedTitle] = useState('')
@@ -113,7 +114,7 @@ export default function CraftPage() {
     return tmp.textContent || tmp.innerText || ''
   }
 
-  // Handle apply AI changes
+  // Handle apply AI changes - now applies as preview with pending modifications
   const handleApplyChanges = (modifications: { original: string; modified: string }[]) => {
     if (!docs.activeDocumentId) return
 
@@ -158,10 +159,72 @@ export default function CraftPage() {
       })
     }
 
+    // Apply changes as preview
     docs.updateContent(docs.activeDocumentId, newContent)
+
+    // Store pending modifications with IDs
+    const modificationsWithIds = modifications.map((mod) => ({
+      id: Date.now().toString() + Math.random().toString(36),
+      original: mod.original,
+      modified: mod.modified,
+    }))
+    setPendingModifications(modificationsWithIds)
+
     setSelections([])
     setSelectedText('')
-    toast.success(`Applied ${modifications.length} change(s)!`)
+  }
+
+  // Accept changes - keep the modifications
+  const handleAcceptChanges = () => {
+    setPendingModifications([])
+    toast.success('Changes accepted!')
+  }
+
+  // Reject changes - revert to original
+  const handleRejectChanges = () => {
+    if (!docs.activeDocumentId || pendingModifications.length === 0) return
+
+    let newContent = docs.documentContents[docs.activeDocumentId] || ''
+
+    // Check if content is HTML or plain text
+    const isHtmlContent = newContent.includes('<') && newContent.includes('>')
+
+    if (isHtmlContent) {
+      const tempDiv = document.createElement('div')
+      tempDiv.innerHTML = newContent
+
+      // Revert: replace modified back to original
+      pendingModifications.forEach((mod) => {
+        const walker = document.createTreeWalker(
+          tempDiv,
+          NodeFilter.SHOW_TEXT,
+          null
+        )
+
+        const textNodes: Text[] = []
+        let node
+        while ((node = walker.nextNode())) {
+          textNodes.push(node as Text)
+        }
+
+        textNodes.forEach((textNode) => {
+          if (textNode.nodeValue && textNode.nodeValue.includes(mod.modified)) {
+            textNode.nodeValue = textNode.nodeValue.replace(mod.modified, mod.original)
+          }
+        })
+      })
+
+      newContent = tempDiv.innerHTML
+    } else {
+      // For plain text, simple replacement works
+      pendingModifications.forEach((mod) => {
+        newContent = newContent.replace(mod.modified, mod.original)
+      })
+    }
+
+    docs.updateContent(docs.activeDocumentId, newContent)
+    setPendingModifications([])
+    toast.success('Changes rejected!')
   }
 
   // Handle title edit
@@ -327,6 +390,9 @@ export default function CraftPage() {
             onTextSelect={handleTextSelect}
             selections={selections}
             onRemoveSelection={handleRemoveSelection}
+            pendingModifications={pendingModifications}
+            onAcceptChanges={handleAcceptChanges}
+            onRejectChanges={handleRejectChanges}
           />
         )}
 
