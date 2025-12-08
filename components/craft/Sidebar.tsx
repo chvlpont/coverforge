@@ -172,7 +172,7 @@ export default function Sidebar() {
           {activeTab === 'reference' ? (
             <>
               {showReferenceEditor ? (
-                <div className="flex-1 flex flex-col">
+                <div className="flex-1 flex flex-col overflow-hidden">
                   {/* Back Button & Title */}
                   <div className="px-4 pt-4 pb-2 space-y-3">
                     <button
@@ -217,10 +217,7 @@ export default function Sidebar() {
                       onInput={handleInput}
                       onFocus={handleFocus}
                       onBlur={handleBlur}
-                      className="w-full h-full rounded-lg p-4 text-sm leading-relaxed focus:outline-none whitespace-pre-wrap bg-white text-gray-900 border border-gray-200"
-                      style={{
-                        minHeight: '200px',
-                      }}
+                      className="w-full min-h-full rounded-lg p-4 text-sm leading-relaxed focus:outline-none whitespace-pre-wrap bg-white text-gray-900 border border-gray-200"
                     />
                   </div>
                 </div>
