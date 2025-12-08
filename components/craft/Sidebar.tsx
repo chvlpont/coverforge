@@ -19,6 +19,7 @@ interface SidebarProps {
   onSelectReference: (referenceId: string) => void
   onCreateReference: () => void
   onUpdateReferenceTitle: (referenceId: string, title: string) => void
+  theme: 'light' | 'dark'
 }
 
 export default function Sidebar({
@@ -35,6 +36,7 @@ export default function Sidebar({
   onSelectReference,
   onCreateReference,
   onUpdateReferenceTitle,
+  theme,
 }: SidebarProps) {
   const editorRef = useRef<HTMLDivElement>(null)
   const [isEditing, setIsEditing] = useState(false)
@@ -96,9 +98,10 @@ export default function Sidebar({
     if (editorRef.current && !isEditing) {
       const displayContent = content || placeholder
       editorRef.current.textContent = displayContent
-      editorRef.current.classList.toggle('text-dark-400', !content)
+      const placeholderClass = theme === 'dark' ? 'text-dark-400' : 'text-gray-400'
+      editorRef.current.classList.toggle(placeholderClass, !content)
     }
-  }, [content])
+  }, [content, theme])
 
   const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
     setIsEditing(true)
@@ -111,28 +114,30 @@ export default function Sidebar({
   const handleFocus = () => {
     if (editorRef.current && editorRef.current.textContent === placeholder) {
       editorRef.current.textContent = ''
-      editorRef.current.classList.remove('text-dark-400')
+      const placeholderClass = theme === 'dark' ? 'text-dark-400' : 'text-gray-400'
+      editorRef.current.classList.remove(placeholderClass)
     }
   }
 
   const handleBlur = () => {
     if (editorRef.current && !editorRef.current.textContent?.trim()) {
       editorRef.current.textContent = placeholder
-      editorRef.current.classList.add('text-dark-400')
+      const placeholderClass = theme === 'dark' ? 'text-dark-400' : 'text-gray-400'
+      editorRef.current.classList.add(placeholderClass)
     }
   }
 
   return (
     <div
-      className="h-full bg-dark-850 flex flex-col flex-shrink-0"
+      className={`h-full flex flex-col flex-shrink-0 ${theme === 'dark' ? 'bg-dark-850' : 'bg-gray-100'}`}
       style={{ width: isCollapsed ? '48px' : `${width}px` }}
     >
       {/* Header */}
-      <div className="bg-dark-900 flex-shrink-0">
+      <div className={`flex-shrink-0 ${theme === 'dark' ? 'bg-dark-900' : 'bg-gray-200'}`}>
         <div className="px-4 py-3 flex items-center justify-end">
           <button
             onClick={onToggleCollapse}
-            className="text-dark-400 hover:text-white transition-colors p-1"
+            className={`transition-colors p-1 ${theme === 'dark' ? 'text-dark-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
             title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -152,8 +157,12 @@ export default function Sidebar({
               onClick={() => setActiveTab('reference')}
               className={`flex-1 px-4 py-2 text-sm font-medium transition-colors ${
                 activeTab === 'reference'
-                  ? 'text-white bg-dark-850 border-b-2 border-blue-500'
-                  : 'text-dark-400 hover:text-white'
+                  ? theme === 'dark'
+                    ? 'text-white bg-dark-850 border-b-2 border-blue-500'
+                    : 'text-gray-900 bg-gray-50 border-b-2 border-blue-500'
+                  : theme === 'dark'
+                    ? 'text-dark-400 hover:text-white'
+                    : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               Reference
@@ -162,8 +171,12 @@ export default function Sidebar({
               onClick={() => setActiveTab('documents')}
               className={`flex-1 px-4 py-2 text-sm font-medium transition-colors ${
                 activeTab === 'documents'
-                  ? 'text-white bg-dark-850 border-b-2 border-blue-500'
-                  : 'text-dark-400 hover:text-white'
+                  ? theme === 'dark'
+                    ? 'text-white bg-dark-850 border-b-2 border-blue-500'
+                    : 'text-gray-900 bg-gray-50 border-b-2 border-blue-500'
+                  : theme === 'dark'
+                    ? 'text-dark-400 hover:text-white'
+                    : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               Documents
@@ -186,7 +199,7 @@ export default function Sidebar({
                         setShowReferenceEditor(false)
                         onSelectReference('')
                       }}
-                      className="flex items-center gap-2 text-dark-400 hover:text-white text-sm transition-colors"
+                      className={`flex items-center gap-2 text-sm transition-colors ${theme === 'dark' ? 'text-dark-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -203,12 +216,12 @@ export default function Sidebar({
                         onBlur={handleTitleBlur}
                         onKeyDown={handleTitleKeyDown}
                         autoFocus
-                        className="text-lg font-semibold text-white bg-transparent border-none outline-none focus:outline-none px-0 py-0 w-full"
+                        className={`text-lg font-semibold bg-transparent border-none outline-none focus:outline-none px-0 py-0 w-full ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}
                       />
                     ) : (
                       <h3
                         onClick={handleTitleClick}
-                        className="text-lg font-semibold text-white cursor-pointer hover:bg-dark-700 px-2 py-1 rounded transition-colors -ml-2"
+                        className={`text-lg font-semibold cursor-pointer px-2 py-1 rounded transition-colors -ml-2 ${theme === 'dark' ? 'text-white hover:bg-dark-700' : 'text-gray-900 hover:bg-gray-200'}`}
                         title="Click to edit"
                       >
                         {currentReference?.title || 'Reference'}
@@ -223,7 +236,7 @@ export default function Sidebar({
                       onInput={handleInput}
                       onFocus={handleFocus}
                       onBlur={handleBlur}
-                      className="w-full h-full bg-dark-800 rounded-lg p-4 text-dark-100 text-sm leading-relaxed focus:outline-none whitespace-pre-wrap"
+                      className={`w-full h-full rounded-lg p-4 text-sm leading-relaxed focus:outline-none whitespace-pre-wrap ${theme === 'dark' ? 'bg-dark-800 text-dark-100' : 'bg-white text-gray-900 border border-gray-200'}`}
                       style={{
                         minHeight: '200px',
                       }}
@@ -235,6 +248,7 @@ export default function Sidebar({
                   references={references}
                   onSelectReference={handleSelectReference}
                   onCreateReference={onCreateReference}
+                  theme={theme}
                 />
               )}
             </>
@@ -243,6 +257,7 @@ export default function Sidebar({
               documents={documents}
               onSelectDocument={onSelectDocument}
               onCreateDocument={onCreateDocument}
+              theme={theme}
             />
           )}
         </>
