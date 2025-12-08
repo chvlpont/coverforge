@@ -12,13 +12,6 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
@@ -135,7 +128,7 @@ body {
   margin-top: 1em;
   margin-bottom: 1em;
   font-style: italic;
-  color: #6b7280;
+  color: #374151;
 }
 
 .tiptap hr {

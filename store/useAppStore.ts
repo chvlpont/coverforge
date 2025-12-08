@@ -15,11 +15,6 @@ interface PendingModification {
 }
 
 interface AppState {
-  // Theme
-  theme: 'light' | 'dark'
-  toggleTheme: () => void
-  setTheme: (theme: 'light' | 'dark') => void
-
   // User
   user: any
   setUser: (user: any) => void
@@ -78,11 +73,6 @@ const stripHtml = (html: string): string => {
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
-  // Theme
-  theme: 'dark',
-  toggleTheme: () => set((state) => ({ theme: state.theme === 'dark' ? 'light' : 'dark' })),
-  setTheme: (theme) => set({ theme }),
-
   // User
   user: null,
   setUser: (user) => set({ user }),

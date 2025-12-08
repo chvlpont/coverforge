@@ -5,7 +5,6 @@ import { useAppStore } from '@/store/useAppStore'
 
 export default function AIAssistant() {
   const {
-    theme,
     selectedText,
     selections,
     removeSelection,
@@ -75,11 +74,11 @@ export default function AIAssistant() {
   return (
     <div
       style={{ width: useAppStore.getState().aiAssistantWidth }}
-      className={`flex-shrink-0 h-full flex flex-col ${theme === 'dark' ? 'bg-dark-800' : 'bg-gray-100'}`}
+      className="flex-shrink-0 h-full flex flex-col bg-gray-100"
     >
       {/* Header */}
-      <div className={`px-6 py-4 ${theme === 'dark' ? 'bg-dark-900' : 'bg-gray-200'}`}>
-        <h2 className={`text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>AI Assistant</h2>
+      <div className="px-6 py-4 bg-gray-200">
+        <h2 className="text-lg font-semibold text-gray-900">AI Assistant</h2>
       </div>
 
       {/* Content */}
@@ -87,20 +86,20 @@ export default function AIAssistant() {
         {/* Selected Texts List */}
         {selections.length > 0 && (
           <div className="space-y-2">
-            <div className={`text-xs font-medium ${theme === 'dark' ? 'text-dark-400' : 'text-gray-600'}`}>
+            <div className="text-xs font-medium text-gray-600">
               Selected Sections ({selections.length}):
             </div>
             {selections.map((selection) => (
               <div
                 key={selection.id}
-                className={`rounded-lg p-3 flex items-start gap-2 ${theme === 'dark' ? 'bg-dark-700' : 'bg-white border border-gray-200'}`}
+                className="rounded-lg p-3 flex items-start gap-2 bg-white border border-gray-200"
               >
-                <div className={`flex-1 text-sm whitespace-pre-wrap line-clamp-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                <div className="flex-1 text-sm whitespace-pre-wrap line-clamp-2 text-gray-900">
                   {selection.text}
                 </div>
                 <button
                   onClick={() => removeSelection(selection.id)}
-                  className={`transition-colors flex-shrink-0 ${theme === 'dark' ? 'text-red-400 hover:text-red-300' : 'text-red-600 hover:text-red-700'}`}
+                  className="transition-colors flex-shrink-0 text-red-600 hover:text-red-700"
                   title="Remove"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -113,20 +112,20 @@ export default function AIAssistant() {
         )}
 
         {selections.length === 0 && (
-          <div className={`text-sm text-center py-8 ${theme === 'dark' ? 'text-dark-400' : 'text-gray-500'}`}>
+          <div className="text-sm text-center py-8 text-gray-500">
             Select text in the document to get started
           </div>
         )}
       </div>
 
       {/* Input Area */}
-      <div className={`p-4 space-y-3 ${theme === 'dark' ? 'bg-dark-850' : 'bg-gray-200'}`}>
+      <div className="p-4 space-y-3 bg-gray-200">
         {/* Accept/Reject buttons - shown when there are pending modifications */}
         {pendingModifications.length > 0 && (
           <div className="flex items-center justify-end gap-2">
             <button
               onClick={acceptChanges}
-              className={`p-1.5 rounded transition-colors ${theme === 'dark' ? 'hover:bg-dark-700 text-emerald-400 hover:text-emerald-300' : 'hover:bg-gray-300 text-emerald-600 hover:text-emerald-700'}`}
+              className="p-1.5 rounded transition-colors hover:bg-gray-300 text-emerald-600 hover:text-emerald-700"
               title="Accept changes"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -135,7 +134,7 @@ export default function AIAssistant() {
             </button>
             <button
               onClick={rejectChanges}
-              className={`p-1.5 rounded transition-colors ${theme === 'dark' ? 'hover:bg-dark-700 text-rose-400 hover:text-rose-300' : 'hover:bg-gray-300 text-rose-600 hover:text-rose-700'}`}
+              className="p-1.5 rounded transition-colors hover:bg-gray-300 text-rose-600 hover:text-rose-700"
               title="Reject changes"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -150,7 +149,7 @@ export default function AIAssistant() {
           <div className="space-y-2">
             <div className="flex flex-wrap gap-2">
               {documentName && (
-                <div className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs ${theme === 'dark' ? 'bg-dark-700 border border-dark-600 text-dark-300' : 'bg-white border border-gray-300 text-gray-700'}`}>
+                <div className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs bg-white border border-gray-300 text-gray-700">
                   <svg className="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
@@ -158,7 +157,7 @@ export default function AIAssistant() {
                 </div>
               )}
               {referenceName && (
-                <div className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs ${theme === 'dark' ? 'bg-dark-700 border border-dark-600 text-dark-300' : 'bg-white border border-gray-300 text-gray-700'}`}>
+                <div className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs bg-white border border-gray-300 text-gray-700">
                   <svg className="w-3.5 h-3.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                   </svg>
@@ -175,7 +174,7 @@ export default function AIAssistant() {
             value={instruction}
             onChange={(e) => setInstruction(e.target.value)}
             placeholder="Type your instruction..."
-            className={`w-full rounded-lg px-4 py-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 ${theme === 'dark' ? 'bg-dark-700 text-white border border-dark-600' : 'bg-white text-gray-900 border border-gray-300'}`}
+            className="w-full rounded-lg px-4 py-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white text-gray-900 border border-gray-300"
             disabled={selections.length === 0}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
@@ -187,7 +186,7 @@ export default function AIAssistant() {
           <button
             onClick={handleAskAI}
             disabled={selections.length === 0 || !instruction.trim() || loading}
-            className={`absolute top-1/2 right-3 -translate-y-1/2 p-1.5 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${theme === 'dark' ? 'bg-primary-600 hover:bg-primary-700 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-900'}`}
+            className="absolute top-1/2 right-3 -translate-y-1/2 p-1.5 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-gray-200 hover:bg-gray-300 text-gray-900"
             aria-label="Send"
           >
             {loading ? (

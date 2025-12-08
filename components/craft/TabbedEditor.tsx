@@ -6,7 +6,6 @@ import { useAppStore } from '@/store/useAppStore'
 
 export default function TabbedEditor() {
   const {
-    theme,
     openDocuments,
     activeDocumentId,
     setActiveDocumentId,
@@ -32,25 +31,21 @@ export default function TabbedEditor() {
   return (
     <div className="flex-1 flex flex-col">
       {/* Tabs */}
-      <div className={`flex items-center overflow-x-auto ${theme === 'dark' ? 'bg-dark-900' : 'bg-gray-200'}`}>
+      <div className="flex items-center overflow-x-auto bg-gray-200">
         {openDocuments.map((doc) => (
           <button
             key={doc.id}
             onClick={() => setActiveDocumentId(doc.id)}
             className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 flex-shrink-0 ${
               activeDocumentId === doc.id
-                ? theme === 'dark'
-                  ? 'text-white border-blue-500 bg-dark-850'
-                  : 'text-gray-900 border-blue-500 bg-gray-50'
-                : theme === 'dark'
-                  ? 'text-dark-400 hover:text-white border-transparent'
-                  : 'text-gray-600 hover:text-gray-900 border-transparent'
+                ? 'text-gray-900 border-blue-500 bg-gray-50'
+                : 'text-gray-600 hover:text-gray-900 border-transparent'
             }`}
           >
             <span>{doc.title}</span>
             <span
               onClick={(e) => handleCloseTab(doc.id, e)}
-              className={`rounded p-0.5 transition-colors cursor-pointer ${theme === 'dark' ? 'hover:bg-dark-700' : 'hover:bg-gray-200'}`}
+              className="rounded p-0.5 transition-colors cursor-pointer hover:bg-gray-200"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

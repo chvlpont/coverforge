@@ -13,7 +13,6 @@ import { useAppStore } from '@/store/useAppStore'
 
 export default function DocumentEditor() {
   const {
-    theme,
     activeDocumentId,
     documentContents,
     updateDocumentContent,
@@ -151,7 +150,7 @@ export default function DocumentEditor() {
   }, [pendingModifications, editor, isInitialized])
 
   return (
-    <div ref={containerRef} className={`h-full flex flex-col relative ${theme === 'dark' ? 'bg-dark-800' : 'bg-white'}`}>
+    <div ref={containerRef} className="h-full flex flex-col relative bg-white">
       {/* Format Toolbar */}
       <FormatToolbar editor={editor} />
 
