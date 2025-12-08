@@ -8,6 +8,8 @@ import TabbedEditor from '@/components/craft/TabbedEditor'
 import AIAssistant from '@/components/craft/AIAssistant'
 import Sidebar from '@/components/craft/Sidebar'
 import { useAppStore } from '@/store/useAppStore'
+import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
 
 function CraftPageContent() {
   const router = useRouter()
@@ -118,6 +120,68 @@ function CraftPageContent() {
     ? openDocuments.find(d => d.id === activeDocumentId)?.title || 'Craft'
     : 'Craft'
 
+  // Handle PDF download
+  const handleDownloadPDF = async () => {
+    if (!activeDocumentId) return
+
+    const editorElement = document.querySelector('.tiptap')
+    if (!editorElement) return
+
+    try {
+      // Create a temporary container with white background
+      const container = document.createElement('div')
+      container.style.position = 'absolute'
+      container.style.left = '-9999px'
+      container.style.background = 'white'
+      container.style.padding = '40px'
+      container.style.width = '800px'
+
+      // Clone the editor content
+      const clone = editorElement.cloneNode(true) as HTMLElement
+      container.appendChild(clone)
+      document.body.appendChild(container)
+
+      // Capture as canvas
+      const canvas = await html2canvas(container, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        logging: false,
+      })
+
+      // Remove temporary container
+      document.body.removeChild(container)
+
+      // Create PDF
+      const imgData = canvas.toDataURL('image/png')
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      })
+
+      const imgWidth = 210 // A4 width in mm
+      const pageHeight = 297 // A4 height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width
+      let heightLeft = imgHeight
+      let position = 0
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
+      heightLeft -= pageHeight
+
+      // Add new pages if content is longer than one page
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight
+        pdf.addPage()
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
+        heightLeft -= pageHeight
+      }
+
+      pdf.save(`${currentTitle}.pdf`)
+    } catch (error) {
+      console.error('Error generating PDF:', error)
+    }
+  }
+
   // Handle sidebar resize
   const handleSidebarMouseDown = (e: React.MouseEvent) => {
     setIsDraggingSidebar(true)
@@ -191,6 +255,18 @@ function CraftPageContent() {
             >
               {currentTitle}
             </h1>
+          )}
+          {activeDocumentId && (
+            <button
+              onClick={handleDownloadPDF}
+              className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 rounded-lg text-sm font-medium transition-colors"
+              title="Download as PDF"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Download PDF
+            </button>
           )}
         </div>
       </div>
