@@ -43,7 +43,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-dark-950">
+    <div className="min-h-screen bg-white">
       <Navbar />
       <Hero />
       <HowItWorks />
