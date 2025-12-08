@@ -9,7 +9,6 @@ import TextAlign from '@tiptap/extension-text-align'
 import Highlight from '@tiptap/extension-highlight'
 import { FontSize } from '@/lib/tiptap-extensions'
 import FormatToolbar from './FormatToolbar'
-import { Check, X } from 'lucide-react'
 
 interface TextSelection {
   id: string
@@ -25,6 +24,7 @@ interface DocumentEditorProps {
   pendingModifications: { id: string; original: string; modified: string }[]
   onAcceptChanges: () => void
   onRejectChanges: () => void
+  theme?: 'light' | 'dark'
 }
 
 export default function DocumentEditor({
@@ -36,9 +36,9 @@ export default function DocumentEditor({
   pendingModifications,
   onAcceptChanges,
   onRejectChanges,
+  theme = 'dark',
 }: DocumentEditorProps) {
   const [isInitialized, setIsInitialized] = useState(false)
-  const [buttonPosition, setButtonPosition] = useState<{ top: number; left: number } | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
   const editor = useEditor({
@@ -159,46 +159,10 @@ export default function DocumentEditor({
     }
   }, [pendingModifications, editor, isInitialized])
 
-  // Calculate button position based on highlighted text
-  useEffect(() => {
-    if (pendingModifications.length > 0 && containerRef.current) {
-      const updatePosition = () => {
-        // Find the first highlighted element
-        const highlightedElement = containerRef.current?.querySelector('mark')
-
-        if (highlightedElement) {
-          const rect = highlightedElement.getBoundingClientRect()
-          const containerRect = containerRef.current?.getBoundingClientRect()
-
-          if (containerRect) {
-            setButtonPosition({
-              top: rect.top - containerRect.top + (rect.height / 2),
-              left: rect.right - containerRect.left + 16, // 16px spacing from text
-            })
-          }
-        }
-      }
-
-      updatePosition()
-
-      // Update position on scroll or resize
-      const scrollContainer = containerRef.current.querySelector('.overflow-y-auto')
-      scrollContainer?.addEventListener('scroll', updatePosition)
-      window.addEventListener('resize', updatePosition)
-
-      return () => {
-        scrollContainer?.removeEventListener('scroll', updatePosition)
-        window.removeEventListener('resize', updatePosition)
-      }
-    } else {
-      setButtonPosition(null)
-    }
-  }, [pendingModifications])
-
   return (
-    <div ref={containerRef} className="h-full bg-white flex flex-col relative">
+    <div ref={containerRef} className={`h-full flex flex-col relative ${theme === 'dark' ? 'bg-dark-800' : 'bg-white'}`}>
       {/* Format Toolbar */}
-      <FormatToolbar editor={editor} />
+      <FormatToolbar editor={editor} theme={theme} />
 
       {/* Document Content */}
       <div className="flex-1 overflow-y-auto">
@@ -209,38 +173,6 @@ export default function DocumentEditor({
           />
         </div>
       </div>
-
-      {/* Accept/Reject Controls - Positioned next to modified text */}
-      {pendingModifications.length > 0 && buttonPosition && (
-        <div
-          className="absolute flex gap-2 z-50 animate-in fade-in slide-in-from-left-2 duration-200"
-          style={{
-            top: `${buttonPosition.top}px`,
-            left: `${buttonPosition.left}px`,
-            transform: 'translateY(-50%)',
-          }}
-        >
-          {/* Accept Button */}
-          <button
-            onClick={onAcceptChanges}
-            className="group relative bg-gradient-to-br from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white p-2.5 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95 ring-2 ring-white/20 hover:ring-white/30"
-            title="Accept changes"
-          >
-            <Check className="w-4 h-4 stroke-[2.5]" />
-            <div className="absolute -inset-1 bg-gradient-to-r from-emerald-400 to-green-500 rounded-xl opacity-0 group-hover:opacity-20 blur transition-opacity duration-200" />
-          </button>
-
-          {/* Reject Button */}
-          <button
-            onClick={onRejectChanges}
-            className="group relative bg-gradient-to-br from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white p-2.5 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95 ring-2 ring-white/20 hover:ring-white/30"
-            title="Reject changes"
-          >
-            <X className="w-4 h-4 stroke-[2.5]" />
-            <div className="absolute -inset-1 bg-gradient-to-r from-rose-400 to-red-500 rounded-xl opacity-0 group-hover:opacity-20 blur transition-opacity duration-200" />
-          </button>
-        </div>
-      )}
     </div>
   )
 }
