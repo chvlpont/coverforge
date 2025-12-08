@@ -152,7 +152,7 @@ export default function Sidebar({
               onClick={() => setActiveTab('reference')}
               className={`flex-1 px-4 py-2 text-sm font-medium transition-colors ${
                 activeTab === 'reference'
-                  ? 'text-white bg-dark-850 border-b-2 border-primary-500'
+                  ? 'text-white bg-dark-850 border-b-2 border-blue-500'
                   : 'text-dark-400 hover:text-white'
               }`}
             >
@@ -162,7 +162,7 @@ export default function Sidebar({
               onClick={() => setActiveTab('documents')}
               className={`flex-1 px-4 py-2 text-sm font-medium transition-colors ${
                 activeTab === 'documents'
-                  ? 'text-white bg-dark-850 border-b-2 border-primary-500'
+                  ? 'text-white bg-dark-850 border-b-2 border-blue-500'
                   : 'text-dark-400 hover:text-white'
               }`}
             >

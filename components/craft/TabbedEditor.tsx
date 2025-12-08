@@ -59,7 +59,7 @@ export default function TabbedEditor({
             onClick={() => onActiveDocumentChange(doc.id)}
             className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 flex-shrink-0 ${
               activeDocumentId === doc.id
-                ? 'text-white border-primary-500 bg-dark-850'
+                ? 'text-white border-blue-500 bg-dark-850'
                 : 'text-dark-400 hover:text-white border-transparent'
             }`}
           >
