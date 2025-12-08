@@ -128,7 +128,7 @@ export default function Sidebar({
       style={{ width: isCollapsed ? '48px' : `${width}px` }}
     >
       {/* Header */}
-      <div className="bg-dark-900 border-b border-dark-700 flex-shrink-0">
+      <div className="bg-dark-900 flex-shrink-0">
         <div className="px-4 py-3 flex items-center justify-end">
           <button
             onClick={onToggleCollapse}
@@ -147,7 +147,7 @@ export default function Sidebar({
 
         {/* Tabs */}
         {!isCollapsed && (
-          <div className="flex border-t border-dark-700">
+          <div className="flex mt-2">
             <button
               onClick={() => setActiveTab('reference')}
               className={`flex-1 px-4 py-2 text-sm font-medium transition-colors ${

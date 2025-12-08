@@ -77,7 +77,7 @@ export default function AIAssistant({
   return (
     <div className="h-full bg-dark-800 flex flex-col">
       {/* Header */}
-      <div className="bg-dark-900 border-b border-dark-700 px-6 py-4">
+      <div className="bg-dark-900 px-6 py-4">
         <h2 className="text-lg font-semibold text-white">AI Assistant</h2>
       </div>
 
@@ -119,7 +119,7 @@ export default function AIAssistant({
       </div>
 
       {/* Input Area */}
-      <div className="border-t border-dark-700 p-4 space-y-3">
+      <div className="p-4 space-y-3 bg-dark-850">
         {/* AI Context - Files being used */}
         {(documentName || referenceName) && (
           <div className="space-y-2">

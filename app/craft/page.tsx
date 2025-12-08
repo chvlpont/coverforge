@@ -314,7 +314,7 @@ export default function CraftPage() {
   return (
     <div className="h-screen flex flex-col bg-dark-950">
       {/* Header */}
-      <div className="bg-dark-800 border-b border-dark-700 px-6 py-4 flex items-center justify-between">
+      <div className="bg-dark-800 px-6 py-4 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-4">
           {isEditingTitle ? (
             <input
