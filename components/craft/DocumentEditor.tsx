@@ -67,7 +67,26 @@ export default function DocumentEditor() {
               )
               addSelection(text)
             }
-          }, 50)
+          }, 100)
+        },
+        keyup: (view, event) => {
+          // Handle keyboard selections (Ctrl+A, Shift+Arrow keys, etc.)
+          setTimeout(() => {
+            const { from, to } = view.state.selection
+            const text = view.state.doc.textBetween(from, to, ' ')
+
+            if (text.trim() && from !== to) {
+              // Apply yellow highlight to selected text
+              view.dispatch(
+                view.state.tr.addMark(
+                  from,
+                  to,
+                  view.state.schema.marks.highlight.create()
+                )
+              )
+              addSelection(text)
+            }
+          }, 100)
         },
       },
     },
