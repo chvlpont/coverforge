@@ -120,33 +120,10 @@ export default function AIAssistant() {
 
       {/* Input Area */}
       <div className="p-4 space-y-3 bg-gray-200">
-        {/* Accept/Reject buttons - shown when there are pending modifications */}
-        {pendingModifications.length > 0 && (
-          <div className="flex items-center justify-end gap-2">
-            <button
-              onClick={acceptChanges}
-              className="p-1.5 rounded transition-colors hover:bg-gray-300 text-emerald-600 hover:text-emerald-700"
-              title="Accept changes"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </button>
-            <button
-              onClick={rejectChanges}
-              className="p-1.5 rounded transition-colors hover:bg-gray-300 text-rose-600 hover:text-rose-700"
-              title="Reject changes"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        )}
-
-        {/* AI Context - Files being used */}
-        {(documentName || referenceName) && (
-          <div className="space-y-2">
+        {/* AI Context - Files being used with Accept/Reject buttons */}
+        {(documentName || referenceName || pendingModifications.length > 0) && (
+          <div className="flex items-center justify-between gap-3">
+            {/* File chips */}
             <div className="flex flex-wrap gap-2">
               {documentName && (
                 <div className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs bg-white border border-gray-300 text-gray-700">
@@ -165,6 +142,30 @@ export default function AIAssistant() {
                 </div>
               )}
             </div>
+
+            {/* Accept/Reject buttons - shown when there are pending modifications */}
+            {pendingModifications.length > 0 && (
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  onClick={acceptChanges}
+                  className="p-1.5 rounded transition-colors hover:bg-gray-300 text-emerald-600 hover:text-emerald-700"
+                  title="Accept changes"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </button>
+                <button
+                  onClick={rejectChanges}
+                  className="p-1.5 rounded transition-colors hover:bg-gray-300 text-rose-600 hover:text-rose-700"
+                  title="Reject changes"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
         )}
 
