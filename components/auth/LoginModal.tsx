@@ -57,7 +57,7 @@ export default function LoginModal({ isOpen, onClose, onSwitchToRegister }: Logi
           .single()
 
         if (profileError || !profile) {
-          toast.error('Username not found')
+          toast.error('Invalid username or password')
           setLoading(false)
           return
         }
@@ -71,7 +71,11 @@ export default function LoginModal({ isOpen, onClose, onSwitchToRegister }: Logi
         password,
       })
 
-      if (error) throw error
+      if (error) {
+        toast.error('Invalid username or password')
+        setLoading(false)
+        return
+      }
 
       toast.success('Successfully logged in!')
       onClose()
