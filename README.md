@@ -3,6 +3,6 @@ AI Document Customizer
 
 A smart text-editing SaaS for everyday documents.
 
-This AI-powered web app — built with Next.js, TypeScript, Tailwind, Supabase, and Grok LLaMA 3.3 — helps users instantly generate customized versions of any document.
+This AI-powered web app — built with Next.js, TypeScript, Tailwind, Supabase, Zustand and Grok LLaMA 3.3 — helps users instantly generate customized versions of any document.
 
-Instead of rewriting the same text repeatedly, users upload one master document, highlight the sections they want AI to modify, add target contexts and receive perfectly tailored variations — all while preserving the original document’s structure.
+Instead of rewriting the same content over and over, users can simply highlight the sections they want AI to modify, add target contexts, verify references, and receive perfectly tailored variations in seconds.
