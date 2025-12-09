@@ -10,6 +10,7 @@ import Sidebar from '@/components/craft/Sidebar'
 import { useAppStore } from '@/store/useAppStore'
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
+import Link from 'next/link'
 
 function CraftPageContent() {
   const router = useRouter()
@@ -257,10 +258,11 @@ function CraftPageContent() {
             </h1>
           )}
         </div>
+        <div className="flex items-center gap-4 flex-1 justify-end">
         {activeDocumentId && (
           <button
             onClick={handleDownloadPDF}
-            className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 hover: cursor-pointer text-gray-900 border border-gray-300 rounded-lg text-sm font-medium transition-colors"
             title="Download as PDF"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -269,6 +271,10 @@ function CraftPageContent() {
             Download PDF
           </button>
         )}
+        <div className='"flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 rounded-lg text-sm font-medium transition-colors'>
+          <Link href="/dashboard">Dashboard</Link>
+        </div>
+        </div>
       </div>
 
       {/* Main Content */}
