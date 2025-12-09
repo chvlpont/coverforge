@@ -35,9 +35,10 @@ Instructions:
 2. ${language ? `CRITICAL: Your response MUST be in ${language}. The user's instruction language does NOT matter - always respond in ${language}.` : 'Maintain the same language as the original text'}
 3. Use the reference context (if provided) to inform your modifications
 4. Maintain the same general structure and length unless instructed otherwise
-5. Keep a professional tone
-6. Return ONLY the modified text in ${language || 'the original language'}
-7. Do not include any explanations or additional commentary
+5. IMPORTANT: Preserve the capitalization pattern of the original text. If the original starts with a lowercase letter, your response must also start with a lowercase letter. If it starts with uppercase, keep it uppercase.
+6. Keep a professional tone
+7. Return ONLY the modified text in ${language || 'the original language'}
+8. Do not include any explanations or additional commentary
 
 Modified Text:`
 }
