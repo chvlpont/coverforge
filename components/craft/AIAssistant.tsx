@@ -123,47 +123,51 @@ export default function AIAssistant() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
-        {/* Selected Texts List */}
+        {/* Selected Texts List - Discord style conversation */}
         {selections.length > 0 && (
-          <div className="space-y-3">
-            <div className="text-xs font-medium text-gray-600">
-              Selected Sections ({selections.length}):
-            </div>
+          <div className="space-y-4">
             {selections.map((selection) => (
-              <div key={selection.id} className="space-y-2">
-                {/* Original Selection */}
-                <div className="rounded-lg p-3 flex items-start gap-2 bg-white border border-gray-200">
-                  <div className="flex-1 text-sm whitespace-pre-wrap line-clamp-2 text-gray-900">
-                    {selection.text}
+              <div key={selection.id} className="space-y-3">
+                {/* User Selection */}
+                <div className="flex items-start gap-3">
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-blue-600 mb-1">Selected Text:</div>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 text-sm text-gray-700 whitespace-pre-wrap">
+                        {selection.text}
+                      </div>
+                      <button
+                        onClick={() => removeSelection(selection.id)}
+                        className="flex-shrink-0 text-gray-400 hover:text-red-600 transition-colors"
+                        title="Remove"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => removeSelection(selection.id)}
-                    className="transition-colors flex-shrink-0 text-red-600 hover:text-red-700"
-                    title="Remove"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
                 </div>
 
                 {/* AI Suggestion */}
                 {suggestions[selection.id] && (
-                  <div className="ml-4 space-y-1">
-                    <div className="text-xs font-medium text-blue-600">AI Suggested:</div>
-                    <div className="rounded-lg p-3 flex items-start gap-2 bg-blue-50 border border-blue-200">
-                      <div className="flex-1 text-sm whitespace-pre-wrap text-gray-900">
-                        {suggestions[selection.id]}
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1">
+                      <div className="text-sm font-medium text-blue-600 mb-1">AI Suggests:</div>
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 text-sm text-gray-700 whitespace-pre-wrap">
+                          {suggestions[selection.id]}
+                        </div>
+                        <button
+                          onClick={() => handleAcceptSuggestion(selection.id)}
+                          className="flex-shrink-0 text-emerald-600 hover:text-emerald-700 transition-colors"
+                          title="Accept suggestion"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </button>
                       </div>
-                      <button
-                        onClick={() => handleAcceptSuggestion(selection.id)}
-                        className="transition-colors flex-shrink-0 text-emerald-600 hover:text-emerald-700"
-                        title="Accept suggestion"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </button>
                     </div>
                   </div>
                 )}
