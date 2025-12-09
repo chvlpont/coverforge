@@ -3,18 +3,17 @@ import Button from '@/components/Button'
 
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-gray-50 to-white">
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-24 sm:pt-24 sm:pb-32">
+    <section className="relative overflow-hidden bg-gradient-to-b from-gray-50 to-white min-h-screen flex items-center">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 w-full">
         <div className="text-center">
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 tracking-tight">
-            Your Documents,{' '}
+            AI-Powered Document{' '}
             <span className="text-primary-600">
-              Personalized
+              Editor
             </span>
           </h1>
           <p className="text-xl sm:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-            Upload your master document once. Apply to multiple opportunities.
-            Let AI customize the highlighted sections while keeping your authentic voice intact.
+            Create multiple documents with AI assistance. Upload reference materials and let AI help you write while staying true to your sources.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button>Start Creating</Button>
@@ -27,24 +26,24 @@ export default function Hero() {
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary-100 text-primary-600 mb-3">
               <Clock className="w-6 h-6" />
             </div>
-            <div className="text-3xl font-bold text-gray-900 mb-1">90%</div>
-            <div className="text-gray-600">Time Saved</div>
+            <div className="text-3xl font-bold text-gray-900 mb-1">Multiple</div>
+            <div className="text-gray-600">Documents</div>
           </div>
 
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary-100 text-primary-600 mb-3">
               <Zap className="w-6 h-6" />
             </div>
-            <div className="text-3xl font-bold text-gray-900 mb-1">&lt; 2 min</div>
-            <div className="text-gray-600">Per Letter</div>
+            <div className="text-3xl font-bold text-gray-900 mb-1">AI-Powered</div>
+            <div className="text-gray-600">Suggestions</div>
           </div>
 
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary-100 text-primary-600 mb-3">
               <Target className="w-6 h-6" />
             </div>
-            <div className="text-3xl font-bold text-gray-900 mb-1">100%</div>
-            <div className="text-gray-600">Your Voice</div>
+            <div className="text-3xl font-bold text-gray-900 mb-1">Reference</div>
+            <div className="text-gray-600">Tracking</div>
           </div>
         </div>
       </div>
