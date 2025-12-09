@@ -88,13 +88,25 @@ export const useAppStore = create<AppState>((set, get) => ({
   addSelection: (text) => {
     const { selections } = get()
     if (!text.trim()) return
-    if (selections.some(s => s.text === text)) return
+
+    // Remove existing selections that overlap with the new text
+    // This includes: same text, text contained in new selection, or new text contained in existing selection
+    const filteredSelections = selections.filter(s => {
+      // If texts are the same, remove it
+      if (s.text === text) return false
+      // If existing selection contains the new text, remove it
+      if (s.text.includes(text)) return false
+      // If new text contains the existing selection, remove it
+      if (text.includes(s.text)) return false
+      // Otherwise keep it
+      return true
+    })
 
     const newSelection = {
       id: Date.now().toString(),
       text: text,
     }
-    set({ selections: [...selections, newSelection], selectedText: text })
+    set({ selections: [...filteredSelections, newSelection], selectedText: text })
   },
 
   removeSelection: (id) => set((state) => ({

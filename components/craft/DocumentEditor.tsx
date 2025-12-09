@@ -57,14 +57,26 @@ export default function DocumentEditor() {
             const text = view.state.doc.textBetween(from, to, ' ')
 
             if (text.trim() && from !== to) {
-              // Apply yellow highlight to selected text
-              view.dispatch(
-                view.state.tr.addMark(
-                  from,
-                  to,
-                  view.state.schema.marks.highlight.create()
-                )
+              // Clear all existing highlights first
+              const tr = view.state.tr
+              view.state.doc.descendants((node, pos) => {
+                if (node.marks.some(mark => mark.type.name === 'highlight')) {
+                  node.marks.forEach(mark => {
+                    if (mark.type.name === 'highlight') {
+                      tr.removeMark(pos, pos + node.nodeSize, mark.type)
+                    }
+                  })
+                }
+              })
+
+              // Apply yellow highlight to newly selected text
+              tr.addMark(
+                from,
+                to,
+                view.state.schema.marks.highlight.create()
               )
+
+              view.dispatch(tr)
               addSelection(text)
             }
           }, 100)
@@ -76,14 +88,26 @@ export default function DocumentEditor() {
             const text = view.state.doc.textBetween(from, to, ' ')
 
             if (text.trim() && from !== to) {
-              // Apply yellow highlight to selected text
-              view.dispatch(
-                view.state.tr.addMark(
-                  from,
-                  to,
-                  view.state.schema.marks.highlight.create()
-                )
+              // Clear all existing highlights first
+              const tr = view.state.tr
+              view.state.doc.descendants((node, pos) => {
+                if (node.marks.some(mark => mark.type.name === 'highlight')) {
+                  node.marks.forEach(mark => {
+                    if (mark.type.name === 'highlight') {
+                      tr.removeMark(pos, pos + node.nodeSize, mark.type)
+                    }
+                  })
+                }
+              })
+
+              // Apply yellow highlight to newly selected text
+              tr.addMark(
+                from,
+                to,
+                view.state.schema.marks.highlight.create()
               )
+
+              view.dispatch(tr)
               addSelection(text)
             }
           }, 100)

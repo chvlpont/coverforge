@@ -8,6 +8,7 @@ export default function AIAssistant() {
     selectedText,
     selections,
     removeSelection,
+    clearSelections,
     applyChanges,
     pendingModifications,
     acceptChanges,
@@ -31,13 +32,17 @@ export default function AIAssistant() {
     ? openDocuments.find(d => d.id === activeDocumentId)?.title
     : undefined
 
+  const [suggestions, setSuggestions] = useState<{ [key: string]: string }>({})
+
   const handleAskAI = async () => {
     if (selections.length === 0 || !instruction.trim()) return
 
     setLoading(true)
     try {
       // Process all selections with the same instruction
-      const modifications = await Promise.all(
+      const newSuggestions: { [key: string]: string } = {}
+
+      await Promise.all(
         selections.map(async (selection) => {
           const response = await fetch('/api/ai/generate', {
             method: 'POST',
@@ -54,21 +59,56 @@ export default function AIAssistant() {
           if (!response.ok) throw new Error('Failed to get AI response')
 
           const data = await response.json()
-          return {
-            original: selection.text,
-            modified: data.result,
-          }
+          newSuggestions[selection.id] = data.result
         })
       )
 
-      // Directly apply changes
-      applyChanges(modifications)
+      setSuggestions(newSuggestions)
       setInstruction('')
     } catch (error: any) {
       console.error('AI modification error:', error)
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleAcceptSuggestion = (selectionId: string) => {
+    const selection = selections.find(s => s.id === selectionId)
+    const suggestion = suggestions[selectionId]
+
+    if (!selection || !suggestion) return
+
+    applyChanges([{
+      original: selection.text,
+      modified: suggestion,
+    }])
+
+    // Remove this suggestion and selection
+    setSuggestions(prev => {
+      const newSuggestions = { ...prev }
+      delete newSuggestions[selectionId]
+      return newSuggestions
+    })
+    removeSelection(selectionId)
+  }
+
+  const handleAcceptAll = () => {
+    const modifications = selections
+      .filter(s => suggestions[s.id])
+      .map(s => ({
+        original: s.text,
+        modified: suggestions[s.id],
+      }))
+
+    if (modifications.length > 0) {
+      applyChanges(modifications)
+      setSuggestions({})
+      clearSelections()
+    }
+  }
+
+  const handleRejectAll = () => {
+    setSuggestions({})
   }
 
   return (
@@ -85,27 +125,48 @@ export default function AIAssistant() {
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {/* Selected Texts List */}
         {selections.length > 0 && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="text-xs font-medium text-gray-600">
               Selected Sections ({selections.length}):
             </div>
             {selections.map((selection) => (
-              <div
-                key={selection.id}
-                className="rounded-lg p-3 flex items-start gap-2 bg-white border border-gray-200"
-              >
-                <div className="flex-1 text-sm whitespace-pre-wrap line-clamp-2 text-gray-900">
-                  {selection.text}
+              <div key={selection.id} className="space-y-2">
+                {/* Original Selection */}
+                <div className="rounded-lg p-3 flex items-start gap-2 bg-white border border-gray-200">
+                  <div className="flex-1 text-sm whitespace-pre-wrap line-clamp-2 text-gray-900">
+                    {selection.text}
+                  </div>
+                  <button
+                    onClick={() => removeSelection(selection.id)}
+                    className="transition-colors flex-shrink-0 text-red-600 hover:text-red-700"
+                    title="Remove"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
                 </div>
-                <button
-                  onClick={() => removeSelection(selection.id)}
-                  className="transition-colors flex-shrink-0 text-red-600 hover:text-red-700"
-                  title="Remove"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+
+                {/* AI Suggestion */}
+                {suggestions[selection.id] && (
+                  <div className="ml-4 space-y-1">
+                    <div className="text-xs font-medium text-blue-600">AI Suggested:</div>
+                    <div className="rounded-lg p-3 flex items-start gap-2 bg-blue-50 border border-blue-200">
+                      <div className="flex-1 text-sm whitespace-pre-wrap text-gray-900">
+                        {suggestions[selection.id]}
+                      </div>
+                      <button
+                        onClick={() => handleAcceptSuggestion(selection.id)}
+                        className="transition-colors flex-shrink-0 text-emerald-600 hover:text-emerald-700"
+                        title="Accept suggestion"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -121,7 +182,7 @@ export default function AIAssistant() {
       {/* Input Area */}
       <div className="p-4 space-y-3 bg-gray-200">
         {/* AI Context - Files being used with Accept/Reject buttons */}
-        {(documentName || referenceName || pendingModifications.length > 0) && (
+        {(documentName || referenceName || Object.keys(suggestions).length > 0) && (
           <div className="flex items-center justify-between gap-3">
             {/* File chips */}
             <div className="flex flex-wrap gap-2">
@@ -143,22 +204,22 @@ export default function AIAssistant() {
               )}
             </div>
 
-            {/* Accept/Reject buttons - shown when there are pending modifications */}
-            {pendingModifications.length > 0 && (
+            {/* Accept/Reject buttons - shown when there are suggestions */}
+            {Object.keys(suggestions).length > 0 && (
               <div className="flex items-center gap-2 flex-shrink-0">
                 <button
-                  onClick={acceptChanges}
+                  onClick={handleAcceptAll}
                   className="p-1.5 rounded transition-colors hover:bg-gray-300 text-emerald-600 hover:text-emerald-700"
-                  title="Accept changes"
+                  title="Accept all suggestions"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </button>
                 <button
-                  onClick={rejectChanges}
+                  onClick={handleRejectAll}
                   className="p-1.5 rounded transition-colors hover:bg-gray-300 text-rose-600 hover:text-rose-700"
-                  title="Reject changes"
+                  title="Reject all suggestions"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
