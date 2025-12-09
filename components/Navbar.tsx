@@ -1,12 +1,37 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import LoginModal from './auth/LoginModal'
 import RegisterModal from './auth/RegisterModal'
 
 export default function Navbar() {
   const [isLoginOpen, setIsLoginOpen] = useState(false)
   const [isRegisterOpen, setIsRegisterOpen] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const router = useRouter()
+  const pathname = usePathname()
+  const supabase = createClient()
+
+  const isOnDashboard = pathname === '/dashboard'
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      setIsLoggedIn(!!session)
+    }
+
+    checkAuth()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsLoggedIn(!!session)
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [supabase])
 
   const handleSwitchToRegister = () => {
     setIsLoginOpen(false)
@@ -16,6 +41,15 @@ export default function Navbar() {
   const handleSwitchToLogin = () => {
     setIsRegisterOpen(false)
     setIsLoginOpen(true)
+  }
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push('/')
+  }
+
+  const handleDashboardClick = () => {
+    router.push('/dashboard')
   }
 
   return (
@@ -30,18 +64,39 @@ export default function Navbar() {
             </div>
 
             <div className="flex items-center gap-4">
-              <button
-                onClick={() => setIsLoginOpen(true)}
-                className="text-gray-600 hover:text-gray-900 font-semibold transition-colors cursor-pointer"
-              >
-                Log In
-              </button>
-              <button
-                onClick={() => setIsRegisterOpen(true)}
-                className="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-bold transition-all cursor-pointer"
-              >
-                Register
-              </button>
+              {isLoggedIn ? (
+                <>
+                  {!isOnDashboard && (
+                    <button
+                      onClick={handleDashboardClick}
+                      className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-gray-900 rounded-lg font-semibold transition-all cursor-pointer"
+                    >
+                      Dashboard
+                    </button>
+                  )}
+                  <button
+                    onClick={handleLogout}
+                    className="px-6 py-2 text-gray-900 rounded-lg font-bold transition-all cursor-pointer"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setIsLoginOpen(true)}
+                    className="text-gray-600 hover:text-gray-900 font-semibold transition-colors cursor-pointer"
+                  >
+                    Log In
+                  </button>
+                  <button
+                    onClick={() => setIsRegisterOpen(true)}
+                    className="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-bold transition-all cursor-pointer"
+                  >
+                    Register
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
