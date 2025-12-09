@@ -86,13 +86,13 @@ export default function Navbar() {
                 <>
                   <button
                     onClick={() => setIsLoginOpen(true)}
-                    className="text-gray-600 hover:text-gray-900 font-semibold transition-colors cursor-pointer"
+                    className="text-gray-900 hover:text-gray-900 font-semibold transition-colors cursor-pointer"
                   >
                     Log In
                   </button>
                   <button
                     onClick={() => setIsRegisterOpen(true)}
-                    className="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-bold transition-all cursor-pointer"
+                    className="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-gray-900 rounded-lg font-bold transition-all cursor-pointer"
                   >
                     Register
                   </button>
