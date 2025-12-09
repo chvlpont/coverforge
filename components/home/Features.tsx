@@ -16,11 +16,7 @@ export default function Features() {
 
             <div className="space-y-6">
               <div className="flex gap-4">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary-600 flex items-center justify-center mt-1">
-                  <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
+                <div className="flex-shrink-0 w-2 h-2 rounded-full bg-indigo-500 mt-2"></div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-1">Selective Customization</h3>
                   <p className="text-gray-600">You control what changes. Highlight specific paragraphs or sentences.</p>
@@ -28,11 +24,7 @@ export default function Features() {
               </div>
 
               <div className="flex gap-4">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary-600 flex items-center justify-center mt-1">
-                  <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
+                <div className="flex-shrink-0 w-2 h-2 rounded-full bg-purple-500 mt-2"></div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-1">Batch Processing</h3>
                   <p className="text-gray-600">Upload 10 opportunities, get 10 custom documents. All at once.</p>
@@ -40,11 +32,7 @@ export default function Features() {
               </div>
 
               <div className="flex gap-4">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary-600 flex items-center justify-center mt-1">
-                  <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
+                <div className="flex-shrink-0 w-2 h-2 rounded-full bg-pink-500 mt-2"></div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-1">Your Voice, Enhanced</h3>
                   <p className="text-gray-600">AI matches your writing style while emphasizing relevant skills.</p>
@@ -60,16 +48,16 @@ export default function Features() {
                   <div className="w-3 h-3 rounded-full bg-red-500"></div>
                   <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
                   <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  <span className="ml-2">master-letter.txt</span>
+                  <span className="ml-2">project-proposal.txt</span>
                 </div>
                 <div className="space-y-2 text-gray-700 font-mono text-sm">
-                  <p>Dear Hiring Manager,</p>
+                  <p>Dear [CLIENT_NAME],</p>
                   <p className="bg-primary-50 border-l-2 border-primary-500 pl-3 py-1">
-                    I am excited to apply for [POSITION] at [COMPANY]...
+                    We propose a [PROJECT_TYPE] solution that addresses your [SPECIFIC_NEED]...
                   </p>
-                  <p>With 5 years of experience in software development...</p>
+                  <p>Our team has successfully delivered 50+ projects...</p>
                   <p className="bg-primary-50 border-l-2 border-primary-500 pl-3 py-1">
-                    My expertise in [RELEVANT_SKILLS] makes me...
+                    This approach will leverage [RELEVANT_TECHNOLOGIES] to achieve...
                   </p>
                 </div>
                 <div className="pt-4 flex items-center gap-2 text-xs text-primary-600">
