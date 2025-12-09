@@ -120,6 +120,14 @@ export default function DashboardPage() {
     }
   }
 
+  // Get text preview from HTML content
+  const getTextPreview = (htmlContent: string) => {
+    if (!htmlContent) return 'Start writing...'
+    // Remove HTML tags and clean up whitespace
+    const text = htmlContent.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+    return text
+  }
+
   if (loading) {
     return <Loader />
   }
@@ -130,18 +138,20 @@ export default function DashboardPage() {
 
       {/* Content */}
       <div className="pt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">My Documents</h1>
-        {/* Create New Document Button */}
-        <button
-          onClick={handleCreateDocument}
-          disabled={isCreating}
-          className="mb-8 bg-primary-600 hover:bg-primary-700 text-white rounded-lg px-6 py-4 font-medium transition-colors disabled:opacity-50 flex items-center gap-3 cursor-pointer"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Create New Document
-        </button>
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-2xl font-medium text-gray-900">My Documents</h1>
+          {/* Create New Document Button */}
+          <button
+            onClick={handleCreateDocument}
+            disabled={isCreating}
+            className="bg-primary-600 hover:bg-primary-700 text-white rounded-lg px-4 py-2 font-medium transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer text-sm"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Create New Document
+          </button>
+        </div>
 
         {/* Documents Grid */}
         {documents.length === 0 ? (
@@ -153,33 +163,43 @@ export default function DashboardPage() {
             <p className="text-gray-500">Create your first document to get started</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {documents.map((doc) => (
               <div
                 key={doc.id}
                 onClick={() => handleOpenDocument(doc.id)}
-                className="bg-white border border-gray-200 rounded-lg p-5 hover:border-primary-500 transition-all cursor-pointer group"
+                className="group cursor-pointer"
               >
-                {/* Document Icon */}
-                <div className="flex items-start justify-between mb-3">
-                  <svg className="w-8 h-8 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
+                {/* Document Preview */}
+                <div className="relative bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-all mb-3">
+                  {/* Preview Content */}
+                  <div className="aspect-[8.5/11] p-6 bg-white border-b border-gray-100">
+                    <div className="text-xs text-gray-700 line-clamp-[14] leading-relaxed">
+                      {getTextPreview(doc.content)}
+                    </div>
+                  </div>
+
+                  {/* Delete Button */}
                   <button
                     onClick={(e) => handleDeleteDocument(doc.id, e)}
-                    className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all"
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 bg-white rounded-full p-2 shadow-md hover:bg-red-50 transition-all"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-gray-600 hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
                 </div>
 
                 {/* Document Info */}
-                <h3 className="text-gray-900 font-medium text-lg mb-2 truncate">{doc.title}</h3>
-                <p className="text-gray-500 text-sm">
-                  Last edited {new Date(doc.updated_at).toLocaleDateString()}
-                </p>
+                <div className="px-1">
+                  <h3 className="text-sm font-medium text-gray-900 truncate mb-1">{doc.title}</h3>
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Edited {new Date(doc.updated_at).toLocaleDateString()}</span>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
