@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import LoginModal from './auth/LoginModal'
 import RegisterModal from './auth/RegisterModal'
+import Link from 'next/link'
 
 export default function Navbar() {
   const [isLoginOpen, setIsLoginOpen] = useState(false)
@@ -59,7 +60,7 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
               <h1 className="text-2xl font-bold text-gray-900">
-                Coverforge
+                <Link href="/">Coverforge</Link>
               </h1>
             </div>
 
