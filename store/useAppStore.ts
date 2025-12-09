@@ -43,6 +43,7 @@ interface AppState {
   setActiveDocumentId: (id: string | null) => void
   updateDocumentContent: (documentId: string, content: string) => void
   updateDocumentTitle: (documentId: string, title: string) => Promise<void>
+  deleteDocument: (documentId: string) => Promise<void>
 
   // References
   references: Reference[]
@@ -54,6 +55,7 @@ interface AppState {
   updateReferenceContent: (content: string) => void
   updateReferenceTitle: (referenceId: string, title: string) => Promise<void>
   saveReferenceContent: () => Promise<void>
+  deleteReference: (referenceId: string) => Promise<void>
 
   // UI State
   isSidebarCollapsed: boolean
@@ -335,6 +337,39 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
+  deleteDocument: async (documentId) => {
+    try {
+      const supabase = createClient()
+      const { error } = await supabase
+        .from('documents')
+        .delete()
+        .eq('id', documentId)
+
+      if (error) throw error
+
+      const { openDocuments, documentContents, activeDocumentId } = get()
+      const newOpenDocs = openDocuments.filter(d => d.id !== documentId)
+      const newContents = { ...documentContents }
+      delete newContents[documentId]
+
+      let newActiveId = activeDocumentId
+      if (activeDocumentId === documentId) {
+        newActiveId = newOpenDocs[0]?.id || null
+      }
+
+      set((state) => ({
+        documents: state.documents.filter(d => d.id !== documentId),
+        openDocuments: newOpenDocs,
+        documentContents: newContents,
+        activeDocumentId: newActiveId,
+      }))
+
+      toast.success('Document deleted')
+    } catch (error: any) {
+      toast.error('Failed to delete document: ' + error.message)
+    }
+  },
+
   // References
   references: [],
   selectedReferenceId: null,
@@ -444,6 +479,30 @@ export const useAppStore = create<AppState>((set, get) => ({
       }))
     } catch (error: any) {
       toast.error('Failed to update title: ' + error.message)
+    }
+  },
+
+  deleteReference: async (referenceId) => {
+    try {
+      const supabase = createClient()
+      const { error } = await supabase
+        .from('references')
+        .delete()
+        .eq('id', referenceId)
+
+      if (error) throw error
+
+      const { selectedReferenceId } = get()
+
+      set((state) => ({
+        references: state.references.filter(r => r.id !== referenceId),
+        selectedReferenceId: selectedReferenceId === referenceId ? null : selectedReferenceId,
+        referenceContent: selectedReferenceId === referenceId ? '' : state.referenceContent,
+      }))
+
+      toast.success('Reference deleted')
+    } catch (error: any) {
+      toast.error('Failed to delete reference: ' + error.message)
     }
   },
 
