@@ -162,25 +162,31 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }: Regi
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="w-full max-w-md relative">
-        <div className="bg-dark-800 rounded-xl p-8 border border-dark-700 shadow-2xl">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md relative"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="bg-white rounded-xl p-8 border-2 border-gray-200 shadow-2xl">
           {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-dark-400 hover:text-white transition-colors cursor-pointer"
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
           >
             <X className="w-6 h-6" />
           </button>
 
-          <h2 className="text-3xl font-bold text-white mb-6 text-center">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">
             Create Account
           </h2>
 
           {/* Email/Password Register */}
           <form onSubmit={handleEmailRegister} noValidate className="space-y-4">
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-dark-100 mb-2">
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
                 Username
               </label>
               <input
@@ -190,12 +196,12 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }: Regi
                 onChange={(e) => setUsername(e.target.value)}
                 onBlur={handleUsernameBlur}
                 required
-                className="w-full px-4 py-3 bg-dark-900 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
               />
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-dark-100 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                 Email
               </label>
               <input
@@ -205,12 +211,12 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }: Regi
                 onChange={(e) => setEmail(e.target.value)}
                 onBlur={handleEmailBlur}
                 required
-                className="w-full px-4 py-3 bg-dark-900 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-dark-100 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                 Password
               </label>
               <input
@@ -221,12 +227,12 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }: Regi
                 onBlur={handlePasswordBlur}
                 required
                 minLength={6}
-                className="w-full px-4 py-3 bg-dark-900 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
               />
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-dark-100 mb-2">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
                 Confirm Password
               </label>
               <input
@@ -237,25 +243,25 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }: Regi
                 onBlur={handleConfirmPasswordBlur}
                 required
                 minLength={6}
-                className="w-full px-4 py-3 bg-dark-900 border border-dark-700 rounded-lg text-white focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="w-full px-6 py-4 bg-black text-white rounded-lg font-bold text-lg transition-all shadow-xl disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {loading ? 'Creating account...' : 'Create Account'}
             </button>
           </form>
 
           {/* Sign In Link */}
-          <p className="mt-6 text-center text-sm text-dark-400">
+          <p className="mt-6 text-center text-sm text-gray-600">
             Already have an account?{' '}
             <button
               onClick={onSwitchToLogin}
-              className="text-primary-500 hover:text-primary-400 font-semibold cursor-pointer"
+              className="text-primary-600 hover:text-primary-700 font-semibold cursor-pointer"
             >
               Sign in
             </button>
