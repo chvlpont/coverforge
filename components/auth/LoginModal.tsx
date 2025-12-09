@@ -117,7 +117,7 @@ export default function LoginModal({ isOpen, onClose, onSwitchToRegister }: Logi
                 value={emailOrUsername}
                 onChange={(e) => setEmailOrUsername(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500 autofill:bg-white autofill:text-gray-900"
               />
             </div>
 
@@ -132,7 +132,7 @@ export default function LoginModal({ isOpen, onClose, onSwitchToRegister }: Logi
                 onChange={(e) => setPassword(e.target.value)}
                 onBlur={handlePasswordBlur}
                 required
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500 autofill:bg-white autofill:text-gray-900"
               />
             </div>
 

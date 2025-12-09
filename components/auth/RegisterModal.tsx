@@ -196,7 +196,7 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }: Regi
                 onChange={(e) => setUsername(e.target.value)}
                 onBlur={handleUsernameBlur}
                 required
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500 autofill:bg-white autofill:text-gray-900"
               />
             </div>
 
@@ -211,7 +211,7 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }: Regi
                 onChange={(e) => setEmail(e.target.value)}
                 onBlur={handleEmailBlur}
                 required
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500 autofill:bg-white autofill:text-gray-900"
               />
             </div>
 
@@ -227,7 +227,7 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }: Regi
                 onBlur={handlePasswordBlur}
                 required
                 minLength={6}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500 autofill:bg-white autofill:text-gray-900"
               />
             </div>
 
@@ -243,7 +243,7 @@ export default function RegisterModal({ isOpen, onClose, onSwitchToLogin }: Regi
                 onBlur={handleConfirmPasswordBlur}
                 required
                 minLength={6}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500 autofill:bg-white autofill:text-gray-900"
               />
             </div>
 
