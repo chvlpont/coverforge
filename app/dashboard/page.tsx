@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Document } from '@/lib/types/database'
 import Loader from '@/components/Loader'
 import toast from 'react-hot-toast'
+import Navbar from '@/components/Navbar'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -125,24 +126,11 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">My Documents</h1>
-          <button
-            onClick={async () => {
-              await supabase.auth.signOut()
-              router.push('/')
-            }}
-            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
-          >
-            Sign Out
-          </button>
-        </div>
-      </div>
+      <Navbar />
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="pt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">My Documents</h1>
         {/* Create New Document Button */}
         <button
           onClick={handleCreateDocument}
