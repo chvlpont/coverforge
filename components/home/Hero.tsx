@@ -1,7 +1,13 @@
 import { Clock, Zap, Target } from 'lucide-react'
 import Button from '@/components/Button'
+import LoginModal from '../auth/LoginModal'
+import RegisterModal from '../auth/RegisterModal'
+import { useState } from 'react'
 
 export default function Hero() {
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
+
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-gray-50 to-white min-h-screen flex items-center">
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 w-full">
@@ -16,8 +22,7 @@ export default function Hero() {
             Create multiple documents with AI assistance. Upload reference materials and let AI help you write while staying true to your sources.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button>Start Creating</Button>
-            <Button>See How It Works</Button>
+            <Button onClick={() => setIsLoginModalOpen(true)}>Start Creating</Button>
           </div>
         </div>
 
@@ -47,6 +52,26 @@ export default function Hero() {
           </div>
         </div>
       </div>
+      {isLoginModalOpen && (
+        <LoginModal
+          isOpen={isLoginModalOpen}
+          onClose={() => setIsLoginModalOpen(false)}
+          onSwitchToRegister={() => {
+            setIsLoginModalOpen(false)
+            setIsRegisterModalOpen(true)
+          }}
+        />
+      )}
+      {isRegisterModalOpen && (
+        <RegisterModal
+          isOpen={isRegisterModalOpen}
+          onClose={() => setIsRegisterModalOpen(false)}
+          onSwitchToLogin={() => {
+            setIsRegisterModalOpen(false)
+            setIsLoginModalOpen(true)
+          }}
+        />
+      )}
     </section>
   )
 }
