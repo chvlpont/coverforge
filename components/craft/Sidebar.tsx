@@ -38,16 +38,20 @@ export default function Sidebar() {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Auto-save reference content
+  // Auto-save reference content (only when content actually changes, not on initial load)
   useEffect(() => {
-    if (!selectedReferenceId || !referenceContent) return
+    if (!selectedReferenceId) return
+
+    // Check if content has actually changed from what's stored
+    const storedReference = references.find(r => r.id === selectedReferenceId)
+    if (!storedReference || storedReference.content === referenceContent) return
 
     const timer = setTimeout(() => {
       saveReferenceContent()
     }, 2000)
 
     return () => clearTimeout(timer)
-  }, [referenceContent, selectedReferenceId, saveReferenceContent])
+  }, [referenceContent, selectedReferenceId, saveReferenceContent, references])
 
   // Show editor when a reference is selected
   useEffect(() => {
@@ -103,7 +107,7 @@ export default function Sidebar() {
       editorRef.current.textContent = displayContent
       editorRef.current.classList.toggle('text-gray-400', !referenceContent)
     }
-  }, [referenceContent, placeholder, selectedReferenceId])
+  }, [referenceContent, placeholder, selectedReferenceId, showReferenceEditor])
 
   const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
     const newContent = e.currentTarget.textContent || ''
