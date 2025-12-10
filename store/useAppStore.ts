@@ -222,6 +222,26 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       if (error) throw error
       set({ documents: data || [] })
+
+      // Restore previously open documents from localStorage
+      const savedOpenDocIds = JSON.parse(localStorage.getItem('openDocumentIds') || '[]')
+      const savedActiveDocId = localStorage.getItem('activeDocumentId')
+
+      if (savedOpenDocIds.length > 0 && data) {
+        const docsToOpen = data.filter(d => savedOpenDocIds.includes(d.id))
+        const documentContents: { [key: string]: string } = {}
+        docsToOpen.forEach(doc => {
+          documentContents[doc.id] = doc.content
+        })
+
+        set({
+          openDocuments: docsToOpen,
+          documentContents,
+          activeDocumentId: savedActiveDocId && docsToOpen.some(d => d.id === savedActiveDocId)
+            ? savedActiveDocId
+            : docsToOpen[0]?.id || null
+        })
+      }
     } catch (error: any) {
       toast.error('Failed to load documents: ' + error.message)
     }
@@ -248,9 +268,13 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       if (error) throw error
 
+      const newOpenDocuments = [...openDocuments, data]
+      localStorage.setItem('openDocumentIds', JSON.stringify(newOpenDocuments.map(d => d.id)))
+      localStorage.setItem('activeDocumentId', data.id)
+
       set({
         documents: [data, ...documents],
-        openDocuments: [...openDocuments, data],
+        openDocuments: newOpenDocuments,
         documentContents: { ...documentContents, [data.id]: '' },
         activeDocumentId: data.id,
       })
@@ -267,13 +291,18 @@ export const useAppStore = create<AppState>((set, get) => ({
     if (!doc) return
 
     if (openDocuments.find(d => d.id === documentId)) {
+      localStorage.setItem('activeDocumentId', documentId)
       set({ activeDocumentId: documentId })
       toast('Document already open', { icon: 'ℹ️' })
       return
     }
 
+    const newOpenDocuments = [...openDocuments, doc]
+    localStorage.setItem('openDocumentIds', JSON.stringify(newOpenDocuments.map(d => d.id)))
+    localStorage.setItem('activeDocumentId', documentId)
+
     set({
-      openDocuments: [...openDocuments, doc],
+      openDocuments: newOpenDocuments,
       documentContents: { ...documentContents, [documentId]: doc.content },
       activeDocumentId: documentId,
     })
@@ -290,6 +319,13 @@ export const useAppStore = create<AppState>((set, get) => ({
       newActiveId = newOpenDocs[0]?.id || null
     }
 
+    localStorage.setItem('openDocumentIds', JSON.stringify(newOpenDocs.map(d => d.id)))
+    if (newActiveId) {
+      localStorage.setItem('activeDocumentId', newActiveId)
+    } else {
+      localStorage.removeItem('activeDocumentId')
+    }
+
     set({
       openDocuments: newOpenDocs,
       documentContents: newContents,
@@ -297,7 +333,14 @@ export const useAppStore = create<AppState>((set, get) => ({
     })
   },
 
-  setActiveDocumentId: (id) => set({ activeDocumentId: id }),
+  setActiveDocumentId: (id) => {
+    if (id) {
+      localStorage.setItem('activeDocumentId', id)
+    } else {
+      localStorage.removeItem('activeDocumentId')
+    }
+    set({ activeDocumentId: id })
+  },
 
   updateDocumentContent: (documentId, content) => {
     const { documentContents, user } = get()
