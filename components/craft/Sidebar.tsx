@@ -125,6 +125,16 @@ export default function Sidebar() {
     }
   }
 
+  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    e.preventDefault()
+
+    // Get plain text from clipboard
+    const text = e.clipboardData.getData('text/plain')
+
+    // Insert the text without any formatting
+    document.execCommand('insertText', false, text)
+  }
+
   return (
     <div
       className="h-full flex flex-col flex-shrink-0 bg-gray-100 w-full md:w-auto"
@@ -226,6 +236,7 @@ export default function Sidebar() {
                       onInput={handleInput}
                       onFocus={handleFocus}
                       onBlur={handleBlur}
+                      onPaste={handlePaste}
                       className="w-full min-h-full rounded-lg p-4 text-sm leading-relaxed focus:outline-none whitespace-pre-wrap bg-white text-gray-900 border border-gray-200"
                     />
                   </div>
