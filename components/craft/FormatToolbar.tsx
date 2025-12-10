@@ -87,7 +87,7 @@ export default function FormatToolbar({ editor }: FormatToolbarProps) {
 
   const setFontSize = (size: string) => {
     if (size) {
-      editor.chain().focus().setFontSize(`${size}px`).run()
+      editor.chain().focus().setFontSize(`${size}pt`).run()
     }
   }
 
@@ -113,7 +113,7 @@ export default function FormatToolbar({ editor }: FormatToolbarProps) {
       <div className="relative">
         <select
           onChange={(e) => setFontSize(e.target.value)}
-          defaultValue="11"
+          defaultValue="14"
           className="px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
           title="Font size"
         >

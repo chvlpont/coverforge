@@ -48,7 +48,7 @@ export default function DocumentEditor() {
     editorProps: {
       attributes: {
         class: 'tiptap prose prose-lg max-w-none focus:outline-none min-h-full text-gray-900',
-        style: 'font-size: 11px; font-family: Arial, sans-serif;',
+        style: 'font-size: 14pt; font-family: Arial, sans-serif; line-height: 1.5;',
       },
       handleDOMEvents: {
         mouseup: (view, event) => {

@@ -32,8 +32,9 @@ input:-webkit-autofill:active {
 .tiptap {
   outline: none;
   color: #202124;
-  font-size: 11px;
+  font-size: 14pt;
   font-family: Arial, sans-serif;
+  line-height: 1.5;
 }
 
 .tiptap p {
