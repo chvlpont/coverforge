@@ -64,7 +64,7 @@ export default function Hero() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center px-4">
               <Button
                 onClick={() => isLoggedIn ? router.push('/dashboard') : setIsLoginModalOpen(true)}
-                className="w-full sm:w-auto min-w-[220px] bg-black hover:bg-gray-800 text-white px-8 py-4 text-lg font-semibold shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105"
+                className="w-full sm:w-auto min-w-[220px] bg-black hover:bg-gray-800 text-white px-8 py-4 text-lg font-semibold shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-105 rounded-full"
               >
                 {isLoggedIn ? 'Go to Dashboard' : 'Start Creating Free'}
               </Button>
