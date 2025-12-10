@@ -192,14 +192,27 @@ export default function DocumentEditor() {
     }
   }, [pendingModifications, editor, isInitialized])
 
+  const handleContainerClick = (e: React.MouseEvent) => {
+    // Focus the editor when clicking anywhere in the document area
+    if (editor && e.target === e.currentTarget) {
+      editor.commands.focus('end')
+    }
+  }
+
   return (
     <div ref={containerRef} className="h-full flex flex-col relative bg-white">
       {/* Format Toolbar */}
       <FormatToolbar editor={editor} />
 
       {/* Document Content */}
-      <div className="flex-1 overflow-y-auto bg-white">
-        <div className="max-w-4xl mx-auto py-12 px-16 relative">
+      <div
+        className="flex-1 overflow-y-auto bg-white cursor-text"
+        onClick={handleContainerClick}
+      >
+        <div
+          className="max-w-4xl mx-auto py-12 px-16 relative"
+          onClick={handleContainerClick}
+        >
           <EditorContent
             editor={editor}
             className="w-full"

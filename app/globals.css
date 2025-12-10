@@ -35,6 +35,7 @@ input:-webkit-autofill:active {
   font-size: 14pt;
   font-family: Arial, sans-serif;
   line-height: 1.5;
+  min-height: 60vh;
 }
 
 .tiptap p {
