@@ -2,11 +2,32 @@ import { Clock, Zap, Target } from 'lucide-react'
 import Button from '@/components/Button'
 import LoginModal from '../auth/LoginModal'
 import RegisterModal from '../auth/RegisterModal'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 
 export default function Hero() {
+  const router = useRouter()
+  const supabase = createClient()
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      setIsLoggedIn(!!session)
+    }
+
+    checkAuth()
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsLoggedIn(!!session)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [supabase])
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-gray-50 to-white min-h-screen flex items-center">
@@ -22,7 +43,9 @@ export default function Hero() {
             Create multiple documents with AI assistance. Upload reference materials and let AI help you write while staying true to your sources.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button onClick={() => setIsLoginModalOpen(true)}>Start Creating</Button>
+            <Button onClick={() => isLoggedIn ? router.push('/dashboard') : setIsLoginModalOpen(true)}>
+              {isLoggedIn ? 'Dashboard' : 'Start Creating'}
+            </Button>
           </div>
         </div>
 
