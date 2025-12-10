@@ -16,7 +16,7 @@ export default function Features() {
 
             <div className="space-y-6">
               <div className="flex gap-4">
-                <div className="flex-shrink-0 w-2 h-2 rounded-full bg-indigo-500 mt-2"></div>
+                <div className="flex-shrink-0 w-2 h-2 rounded-full bg-black mt-2"></div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-1">Selective Customization</h3>
                   <p className="text-gray-600">You control what changes. Highlight specific paragraphs or sentences.</p>
@@ -24,7 +24,7 @@ export default function Features() {
               </div>
 
               <div className="flex gap-4">
-                <div className="flex-shrink-0 w-2 h-2 rounded-full bg-purple-500 mt-2"></div>
+                <div className="flex-shrink-0 w-2 h-2 rounded-full bg-black mt-2"></div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-1">Batch Processing</h3>
                   <p className="text-gray-600">Upload 10 opportunities, get 10 custom documents. All at once.</p>
@@ -32,7 +32,7 @@ export default function Features() {
               </div>
 
               <div className="flex gap-4">
-                <div className="flex-shrink-0 w-2 h-2 rounded-full bg-pink-500 mt-2"></div>
+                <div className="flex-shrink-0 w-2 h-2 rounded-full bg-black mt-2"></div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-1">Your Voice, Enhanced</h3>
                   <p className="text-gray-600">AI matches your writing style while emphasizing relevant skills.</p>
