@@ -107,7 +107,7 @@ export default function Sidebar() {
       editorRef.current.textContent = displayContent
       editorRef.current.classList.toggle('text-gray-400', !referenceContent)
     }
-  }, [referenceContent, placeholder, selectedReferenceId, showReferenceEditor])
+  }, [referenceContent, placeholder, selectedReferenceId, showReferenceEditor, activeTab])
 
   const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
     const newContent = e.currentTarget.textContent || ''
