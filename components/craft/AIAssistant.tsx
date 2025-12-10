@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAppStore } from '@/store/useAppStore'
 
 export default function AIAssistant() {
@@ -22,6 +22,18 @@ export default function AIAssistant() {
 
   const [instruction, setInstruction] = useState('')
   const [loading, setLoading] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Track screen size
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+
+    handleResize() // Set initial value
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   // Get reference and document names
   const referenceName = selectedReferenceId
@@ -113,8 +125,8 @@ export default function AIAssistant() {
 
   return (
     <div
-      style={{ width: useAppStore.getState().aiAssistantWidth }}
-      className="flex-shrink-0 h-full flex flex-col bg-gray-100"
+      style={{ width: !isMobile ? useAppStore.getState().aiAssistantWidth : undefined }}
+      className="flex-shrink-0 h-full flex flex-col bg-gray-100 w-full md:w-auto"
     >
       {/* Header */}
       <div className="px-6 py-4 bg-gray-200">

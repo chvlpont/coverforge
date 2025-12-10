@@ -20,12 +20,23 @@ export default function Sidebar() {
   } = useAppStore()
 
   const editorRef = useRef<HTMLDivElement>(null)
-  const [isEditing, setIsEditing] = useState(false)
   const [activeTab, setActiveTab] = useState<'reference' | 'documents'>('reference')
   const [showReferenceEditor, setShowReferenceEditor] = useState(false)
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [editedTitle, setEditedTitle] = useState('')
+  const [isMobile, setIsMobile] = useState(false)
   const placeholder = "Add reference information here (job description, company info, etc.)..."
+
+  // Track screen size
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+
+    handleResize() // Set initial value
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   // Auto-save reference content
   useEffect(() => {
@@ -85,21 +96,19 @@ export default function Sidebar() {
     }
   }
 
-  // Update editor content when content changes (but not during editing)
+  // Update editor content when reference changes (but not if user is focused on it)
   useEffect(() => {
-    if (editorRef.current && !isEditing) {
+    if (editorRef.current && document.activeElement !== editorRef.current) {
       const displayContent = referenceContent || placeholder
       editorRef.current.textContent = displayContent
       editorRef.current.classList.toggle('text-gray-400', !referenceContent)
     }
-  }, [referenceContent, isEditing, placeholder])
+  }, [referenceContent, placeholder, selectedReferenceId])
 
   const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
-    setIsEditing(true)
     const newContent = e.currentTarget.textContent || ''
     const actualContent = newContent === placeholder ? '' : newContent
     updateReferenceContent(actualContent)
-    setTimeout(() => setIsEditing(false), 100)
   }
 
   const handleFocus = () => {
@@ -118,8 +127,8 @@ export default function Sidebar() {
 
   return (
     <div
-      className="h-full flex flex-col flex-shrink-0 bg-gray-100"
-      style={{ width: isSidebarCollapsed ? '48px' : `${sidebarWidth}px` }}
+      className="h-full flex flex-col flex-shrink-0 bg-gray-100 w-full md:w-auto"
+      style={{ width: !isMobile ? (isSidebarCollapsed ? '48px' : `${sidebarWidth}px`) : undefined }}
     >
       {/* Header */}
       <div className="flex-shrink-0 bg-gray-200">

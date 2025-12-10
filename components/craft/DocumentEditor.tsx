@@ -198,11 +198,11 @@ export default function DocumentEditor() {
       <FormatToolbar editor={editor} />
 
       {/* Document Content */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="h-full max-w-4xl mx-auto py-12 px-16 relative">
+      <div className="flex-1 overflow-y-auto bg-white">
+        <div className="max-w-4xl mx-auto py-12 px-16 relative">
           <EditorContent
             editor={editor}
-            className="w-full h-full"
+            className="w-full"
           />
         </div>
       </div>

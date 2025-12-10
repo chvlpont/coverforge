@@ -24,6 +24,7 @@ function CraftPageContent() {
   const [isDraggingAI, setIsDraggingAI] = useState(false)
   const [dragStartX, setDragStartX] = useState(0)
   const [dragStartWidth, setDragStartWidth] = useState(0)
+  const [mobileView, setMobileView] = useState<'document' | 'references' | 'ai'>('document')
 
   // Get everything from the store
   const {
@@ -85,6 +86,13 @@ function CraftPageContent() {
       }
     }
   }, [searchParams, documents, openDocuments])
+
+  // Keep mobile view on document when actively editing
+  useEffect(() => {
+    if (activeDocumentId && openDocuments.length > 0) {
+      setMobileView('document')
+    }
+  }, [activeDocumentId, openDocuments.length])
 
   // Handle title edit
   const handleTitleClick = () => {
@@ -233,7 +241,7 @@ function CraftPageContent() {
   if (loading) return <Loader />
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-white">
       {/* Header */}
       <div className="px-6 py-4 flex items-center justify-between bg-white border-b border-gray-200">
         <div className="flex items-center gap-4">
@@ -262,7 +270,7 @@ function CraftPageContent() {
         {activeDocumentId && (
           <button
             onClick={handleDownloadPDF}
-            className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 hover: cursor-pointer text-gray-900 border border-gray-300 rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 hover:cursor-pointer text-gray-900 border border-gray-300 rounded-lg text-sm font-medium transition-colors"
             title="Download as PDF"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -271,52 +279,92 @@ function CraftPageContent() {
             Download PDF
           </button>
         )}
-        <div className='"flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 rounded-lg text-sm font-medium transition-colors'>
+        <div className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 rounded-lg text-sm font-medium transition-colors">
           <Link href="/dashboard">Dashboard</Link>
         </div>
         </div>
       </div>
 
+      {/* Mobile Navigation - Only visible on mobile */}
+      <div className="md:hidden flex bg-gray-200">
+        <button
+          onClick={() => setMobileView('references')}
+          className={`flex-1 py-3 text-sm font-medium transition-colors border-b-2 ${
+            mobileView === 'references'
+              ? 'text-gray-900 border-blue-500 bg-gray-50'
+              : 'text-gray-600 hover:text-gray-900 border-transparent'
+          }`}
+        >
+          References
+        </button>
+        <button
+          onClick={() => setMobileView('document')}
+          className={`flex-1 py-3 text-sm font-medium transition-colors border-b-2 ${
+            mobileView === 'document'
+              ? 'text-gray-900 border-blue-500 bg-gray-50'
+              : 'text-gray-600 hover:text-gray-900 border-transparent'
+          }`}
+        >
+          Document
+        </button>
+        <button
+          onClick={() => setMobileView('ai')}
+          className={`flex-1 py-3 text-sm font-medium transition-colors border-b-2 ${
+            mobileView === 'ai'
+              ? 'text-gray-900 border-blue-500 bg-gray-50'
+              : 'text-gray-600 hover:text-gray-900 border-transparent'
+          }`}
+        >
+          AI Assistant
+        </button>
+      </div>
+
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left: Sidebar */}
-        <Sidebar />
+        <div className={`${mobileView === 'references' ? 'block w-full' : 'hidden'} md:block md:w-auto`}>
+          <Sidebar />
+        </div>
 
-        {/* Sidebar Resize Handle */}
+        {/* Sidebar Resize Handle - Desktop only */}
         {!isSidebarCollapsed && (
           <div
             onMouseDown={handleSidebarMouseDown}
-            className={`w-px hover:w-1 cursor-col-resize flex-shrink-0 transition-colors ${
+            className={`hidden md:block w-px hover:w-1 cursor-col-resize flex-shrink-0 transition-colors ${
               isDraggingSidebar ? 'bg-blue-500' : 'bg-transparent hover:bg-blue-500'
             }`}
           />
         )}
 
         {/* Center: Tabbed Editor or Empty State */}
-        {openDocuments.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center bg-white">
-            <div className="text-center text-gray-500">
-              <svg className="w-24 h-24 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <p className="text-xl mb-2">No documents open</p>
-              <p className="text-sm">Create or open a document from the sidebar to get started</p>
+        <div className={`${mobileView === 'document' ? 'flex-1' : 'hidden md:flex md:flex-1'} overflow-y-auto`}>
+          {openDocuments.length === 0 ? (
+            <div className="flex-1 flex items-center justify-center bg-white">
+              <div className="text-center text-gray-500">
+                <svg className="w-24 h-24 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <p className="text-xl mb-2">No documents open</p>
+                <p className="text-sm">Open a document from the dashboard or references panel</p>
+              </div>
             </div>
-          </div>
-        ) : (
-          <TabbedEditor />
-        )}
+          ) : (
+            <TabbedEditor />
+          )}
+        </div>
 
-        {/* AI Assistant Resize Handle */}
+        {/* AI Assistant Resize Handle - Desktop only */}
         <div
           onMouseDown={handleAIMouseDown}
-          className={`w-px hover:w-1 cursor-col-resize flex-shrink-0 transition-colors ${
+          className={`hidden md:block w-px hover:w-1 cursor-col-resize flex-shrink-0 transition-colors ${
             isDraggingAI ? 'bg-blue-500' : 'bg-transparent hover:bg-blue-500'
           }`}
         />
 
         {/* Right: AI Assistant */}
-        <AIAssistant />
+        <div className={`${mobileView === 'ai' ? 'block w-full' : 'hidden'} md:block md:w-auto`}>
+          <AIAssistant />
+        </div>
       </div>
     </div>
   )
