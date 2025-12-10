@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { modifyText } from '@/lib/groq/client'
+import { modifyText, answerGeneralQuestion } from '@/lib/groq/client'
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,6 +11,9 @@ export async function POST(request: NextRequest) {
     switch (type) {
       case 'text-modification':
         result = await modifyText(params)
+        break
+      case 'general-question':
+        result = await answerGeneralQuestion(params)
         break
       default:
         return NextResponse.json(

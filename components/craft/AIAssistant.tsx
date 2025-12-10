@@ -18,11 +18,15 @@ export default function AIAssistant() {
     referenceContent,
     openDocuments,
     activeDocumentId,
+    documentContents,
+    updateDocumentContent,
   } = useAppStore()
 
   const [instruction, setInstruction] = useState('')
   const [loading, setLoading] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [generalResponse, setGeneralResponse] = useState('')
+  const [conversationHistory, setConversationHistory] = useState<Array<{type: 'user' | 'ai', content: string}>>([])
 
   // Track screen size
   useEffect(() => {
@@ -47,38 +51,62 @@ export default function AIAssistant() {
   const [suggestions, setSuggestions] = useState<{ [key: string]: string }>({})
 
   const handleAskAI = async () => {
-    if (selections.length === 0 || !instruction.trim()) return
+    if (!instruction.trim()) return
 
     setLoading(true)
+
+    // Add user message to conversation history
+    setConversationHistory(prev => [...prev, { type: 'user', content: instruction }])
+    const currentInstruction = instruction
+    setInstruction('')
+
     try {
-      // Process all selections with the same instruction
-      const newSuggestions: { [key: string]: string } = {}
+      // If there are selections, modify them
+      if (selections.length > 0) {
+        const newSuggestions: { [key: string]: string } = {}
 
-      await Promise.all(
-        selections.map(async (selection) => {
-          const response = await fetch('/api/ai/generate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              type: 'text-modification',
-              originalText: selection.text,
-              instruction: instruction,
-              referenceContext: referenceContent,
-              language: 'EN',
-            }),
+        await Promise.all(
+          selections.map(async (selection) => {
+            const response = await fetch('/api/ai/generate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                type: 'text-modification',
+                originalText: selection.text,
+                instruction: currentInstruction,
+                referenceContext: referenceContent,
+              }),
+            })
+
+            if (!response.ok) throw new Error('Failed to get AI response')
+
+            const data = await response.json()
+            newSuggestions[selection.id] = data.result
           })
+        )
 
-          if (!response.ok) throw new Error('Failed to get AI response')
-
-          const data = await response.json()
-          newSuggestions[selection.id] = data.result
+        setSuggestions(newSuggestions)
+      } else {
+        // General question - no text selected
+        const response = await fetch('/api/ai/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'general-question',
+            instruction: currentInstruction,
+            referenceContext: referenceContent,
+          }),
         })
-      )
 
-      setSuggestions(newSuggestions)
-      setInstruction('')
+        if (!response.ok) throw new Error('Failed to get AI response')
+
+        const data = await response.json()
+        setGeneralResponse(data.result)
+        setConversationHistory(prev => [...prev, { type: 'ai', content: data.result }])
+      }
     } catch (error: any) {
-      console.error('AI modification error:', error)
+      console.error('AI error:', error)
+      setConversationHistory(prev => [...prev, { type: 'ai', content: 'Sorry, I encountered an error. Please try again.' }])
     } finally {
       setLoading(false)
     }
@@ -121,6 +149,44 @@ export default function AIAssistant() {
 
   const handleRejectAll = () => {
     setSuggestions({})
+  }
+
+  const handleAcceptAllGeneral = () => {
+    if (!activeDocumentId) return
+
+    // Get all AI responses from conversation history
+    const aiResponses = conversationHistory
+      .filter(msg => msg.type === 'ai')
+      .map(msg => msg.content)
+
+    if (aiResponses.length === 0) return
+
+    // Get current document content
+    const currentContent = documentContents[activeDocumentId] || ''
+
+    // Convert plain text responses to HTML with proper paragraph formatting
+    const formattedResponses = aiResponses.map(response => {
+      // Split by double newlines to detect paragraphs
+      const paragraphs = response.split(/\n\n+/)
+      return paragraphs.map(p => {
+        // Handle single line breaks within a paragraph
+        const lines = p.split(/\n/)
+        const content = lines.join('<br>')
+        return `<p>${content}</p>`
+      }).join('')
+    }).join('')
+
+    // Append all AI responses to the document
+    const newContent = currentContent + formattedResponses
+    updateDocumentContent(activeDocumentId, newContent)
+
+    // Clear conversation history
+    setConversationHistory([])
+  }
+
+  const handleRejectAllGeneral = () => {
+    // Clear conversation history
+    setConversationHistory([])
   }
 
   return (
@@ -188,9 +254,38 @@ export default function AIAssistant() {
           </div>
         )}
 
-        {selections.length === 0 && (
+        {/* General Conversation - shown when no text selected */}
+        {selections.length === 0 && conversationHistory.length > 0 && (
+          <div className="space-y-4">
+            {conversationHistory.map((message, index) => (
+              <div key={index} className="space-y-2">
+                {message.type === 'user' ? (
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1">
+                      <div className="text-sm font-medium text-blue-600 mb-1">You:</div>
+                      <div className="text-sm text-gray-700 whitespace-pre-wrap">
+                        {message.content}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1">
+                      <div className="text-sm font-medium text-purple-600 mb-1">AI:</div>
+                      <div className="text-sm text-gray-700 whitespace-pre-wrap bg-gray-50 rounded-lg p-3">
+                        {message.content}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {selections.length === 0 && conversationHistory.length === 0 && (
           <div className="text-sm text-center py-8 text-gray-500">
-            Select text in the document to get started
+            Ask me anything or select text in the document to modify it
           </div>
         )}
       </div>
@@ -198,7 +293,7 @@ export default function AIAssistant() {
       {/* Input Area */}
       <div className="p-4 space-y-3 bg-gray-200">
         {/* AI Context - Files being used with Accept/Reject buttons */}
-        {(documentName || referenceName || Object.keys(suggestions).length > 0) && (
+        {(documentName || referenceName || Object.keys(suggestions).length > 0 || conversationHistory.some(m => m.type === 'ai')) && (
           <div className="flex items-center justify-between gap-3">
             {/* File chips */}
             <div className="flex flex-wrap gap-2">
@@ -220,22 +315,34 @@ export default function AIAssistant() {
               )}
             </div>
 
-            {/* Accept/Reject buttons - shown when there are suggestions */}
-            {Object.keys(suggestions).length > 0 && (
+            {/* Accept/Reject buttons - shown when there are suggestions or general responses */}
+            {(Object.keys(suggestions).length > 0 || conversationHistory.some(m => m.type === 'ai')) && (
               <div className="flex items-center gap-2 flex-shrink-0">
                 <button
-                  onClick={handleAcceptAll}
+                  onClick={() => {
+                    if (Object.keys(suggestions).length > 0) {
+                      handleAcceptAll()
+                    } else {
+                      handleAcceptAllGeneral()
+                    }
+                  }}
                   className="p-1.5 rounded transition-colors hover:bg-gray-300 text-emerald-600 hover:text-emerald-700"
-                  title="Accept all suggestions"
+                  title="Accept all"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </button>
                 <button
-                  onClick={handleRejectAll}
+                  onClick={() => {
+                    if (Object.keys(suggestions).length > 0) {
+                      handleRejectAll()
+                    } else {
+                      handleRejectAllGeneral()
+                    }
+                  }}
                   className="p-1.5 rounded transition-colors hover:bg-gray-300 text-rose-600 hover:text-rose-700"
-                  title="Reject all suggestions"
+                  title="Reject all"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -251,9 +358,8 @@ export default function AIAssistant() {
             type="text"
             value={instruction}
             onChange={(e) => setInstruction(e.target.value)}
-            placeholder="Type your instruction..."
+            placeholder={selections.length > 0 ? "Type your instruction..." : "Ask me anything..."}
             className="w-full rounded-lg px-4 py-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white text-gray-900 border border-gray-300"
-            disabled={selections.length === 0}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault()
@@ -263,7 +369,7 @@ export default function AIAssistant() {
           />
           <button
             onClick={handleAskAI}
-            disabled={selections.length === 0 || !instruction.trim() || loading}
+            disabled={!instruction.trim() || loading}
             className="absolute top-1/2 right-3 -translate-y-1/2 p-1.5 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-gray-200 hover:bg-gray-300 text-gray-900"
             aria-label="Send"
           >
