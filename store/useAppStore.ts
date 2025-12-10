@@ -388,7 +388,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   referenceContent: '',
 
   fetchReferences: async () => {
-    const { user } = get()
+    const { user, selectReference } = get()
     if (!user) return
 
     try {
@@ -401,6 +401,12 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       if (error) throw error
       set({ references: data || [] })
+
+      // Restore previously selected reference from localStorage
+      const savedReferenceId = localStorage.getItem('selectedReferenceId')
+      if (savedReferenceId && data?.some(r => r.id === savedReferenceId)) {
+        selectReference(savedReferenceId)
+      }
     } catch (error: any) {
       toast.error('Failed to load references: ' + error.message)
     }
@@ -440,6 +446,13 @@ export const useAppStore = create<AppState>((set, get) => ({
   selectReference: (referenceId) => {
     const { references } = get()
     const ref = references.find(r => r.id === referenceId)
+
+    // Save to localStorage for persistence across refreshes
+    if (referenceId) {
+      localStorage.setItem('selectedReferenceId', referenceId)
+    } else {
+      localStorage.removeItem('selectedReferenceId')
+    }
 
     set({
       selectedReferenceId: referenceId || null,
