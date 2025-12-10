@@ -10,7 +10,9 @@ export default function CTA() {
         <p className="text-xl text-gray-600 mb-8">
           Stop rewriting the same document over and over. Start working smarter.
         </p>
-        <Button>Get Started Free</Button>
+        <Button className="cursor-pointer rounded-full px-8 py-4 bg-black text-white font-semibold hover:bg-gray-800 transition-all">
+          Get Started Free
+        </Button>
       </div>
     </section>
   )
