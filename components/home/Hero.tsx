@@ -71,32 +71,22 @@ export default function Hero() {
                   {isLoggedIn ? 'Go to Dashboard' : 'Start Creating Free'}
                 </Button>
               </div>
-
-              {/* Scroll indicator for mobile */}
-              <div className="mt-16 sm:mt-20 block lg:hidden">
-                <div className="flex flex-col items-center gap-2 text-gray-400 animate-bounce">
-                  <span className="text-sm">Scroll to explore</span>
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                  </svg>
-                </div>
-              </div>
             </div>
 
             {/* Right side - Document Icon */}
-            <div className="hidden lg:flex justify-center items-center relative">
+            <div className="flex justify-center items-center relative mt-12 lg:mt-0">
               <div className="relative animate-float">
                 {/* Shadow */}
                 <div className="absolute inset-0 bg-black/20 blur-3xl transform translate-y-12"></div>
 
                 {/* Main document icon */}
-                <div className="relative w-80 h-96 bg-white rounded-lg shadow-2xl overflow-hidden transform hover:scale-105 transition-transform duration-500">
+                <div className="relative w-64 h-80 sm:w-80 sm:h-96 bg-white rounded-lg shadow-2xl overflow-hidden transform hover:scale-105 transition-transform duration-500">
                   {/* Folded corner */}
                   <div className="absolute top-0 right-0 w-0 h-0 border-l-[60px] border-l-transparent border-t-[60px] border-t-black"></div>
                   <div className="absolute top-0 right-0 w-0 h-0 border-l-[58px] border-l-transparent border-t-[58px] border-t-gray-100"></div>
 
                   {/* Document content */}
-                  <div className="p-12 pt-16">
+                  <div className="p-8 pt-12 sm:p-12 sm:pt-16">
                     {/* Title area */}
                     <div className="mb-8">
                       <div className="h-5 bg-black rounded-md w-3/4 mb-3"></div>
