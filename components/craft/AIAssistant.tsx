@@ -88,12 +88,16 @@ export default function AIAssistant() {
         setSuggestions(newSuggestions)
       } else {
         // General question - no text selected
+        // Get current document content
+        const currentDocumentContent = activeDocumentId ? documentContents[activeDocumentId] : undefined
+
         const response = await fetch('/api/ai/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             type: 'general-question',
             instruction: currentInstruction,
+            documentContent: currentDocumentContent,
             referenceContext: referenceContent,
           }),
         })
@@ -176,9 +180,9 @@ export default function AIAssistant() {
       }).join('')
     }).join('')
 
-    // Append all AI responses to the document
-    const newContent = currentContent + formattedResponses
-    updateDocumentContent(activeDocumentId, newContent)
+    // Replace document content with AI response (use for modifications like "make it shorter")
+    // If you want to append instead, manually copy the AI response
+    updateDocumentContent(activeDocumentId, formattedResponses)
 
     // Clear conversation history
     setConversationHistory([])

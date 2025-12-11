@@ -9,6 +9,7 @@ export interface TextModificationPromptParams {
 
 export interface GeneralQuestionPromptParams {
   instruction: string
+  documentContent?: string
   referenceContext?: string
   language?: string
 }
@@ -21,68 +22,106 @@ export function getTextModificationPrompt({
   language,
 }: TextModificationPromptParams): string {
   const contextSection = referenceContext
-    ? `\nReference Context (use this information to inform your modifications):\n${referenceContext}\n`
+    ? `
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📚 ADDITIONAL REFERENCE MATERIAL (FOR YOUR INFORMATION ONLY - DO NOT MODIFY OR INCLUDE THIS IN YOUR RESPONSE):
+${referenceContext}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`
     : ''
 
   const languageInstruction = language
-    ? `\nIMPORTANT: The original text is in ${language}. You MUST respond in ${language}, regardless of what language the user instruction is written in.\n`
-    : referenceContext
-    ? '\nIMPORTANT: Detect the language used in the Reference Context and respond in the SAME language. If the reference is in Swedish, respond in Swedish. If in English, respond in English, etc.\n'
-    : '\nIMPORTANT: Maintain the same language as the original text.\n'
+    ? `🔴 LANGUAGE: Respond in ${language} only.`
+    : 'Respond in the SAME language as the selected text below.'
 
-  return `You are a professional writing assistant. The user has selected some text and wants you to modify it.
-${languageInstruction}${contextSection}
-Original Text:
+  return `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 SELECTED TEXT TO MODIFY:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ${originalText}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-User Instruction:
+📝 USER'S INSTRUCTION:
 ${instruction}
 
-Instructions:
-1. Modify the text according to the user's instruction
-2. ${language ? `CRITICAL: Your response MUST be in ${language}. The user's instruction language does NOT matter - always respond in ${language}.` : referenceContext ? 'CRITICAL: Use the SAME language as the Reference Context. Match the language of the reference material exactly.' : 'Maintain the same language as the original text'}
-3. Use the reference context (if provided) to inform your modifications
-4. Maintain the same general structure and length unless instructed otherwise
-5. IMPORTANT: Preserve the capitalization pattern of the original text. If the original starts with a lowercase letter, your response must also start with a lowercase letter. If it starts with uppercase, keep it uppercase.
-6. Keep a professional tone
-7. Return ONLY the modified text in ${language || (referenceContext ? 'the same language as the reference context' : 'the original language')}
-8. Do not include any explanations or additional commentary
+🔴 YOUR TASK:
+Modify the "SELECTED TEXT TO MODIFY" above according to the user's instruction.
+${languageInstruction}
+Return ONLY the modified version of the selected text - nothing else.
+${contextSection}
 
-Modified Text:`
+🚫 DO NOT:
+- Modify or include the reference material (if provided)
+- Add explanations or commentary
+- Change the language of the selected text
+- Use HTML tags (<p>, <br>, <div>, etc.) - return plain text only
+
+✅ DO:
+- Modify ONLY the "SELECTED TEXT TO MODIFY" section
+- Keep the same language as the selected text
+- Apply the user's instruction (${instruction}) to the selected text
+- Return plain text without any HTML formatting
+
+MODIFIED VERSION OF SELECTED TEXT (PLAIN TEXT, NO HTML TAGS):`
 }
 
 // General Question / Generation
 export function getGeneralQuestionPrompt({
   instruction,
+  documentContent,
   referenceContext,
   language,
 }: GeneralQuestionPromptParams): string {
+  const documentSection = documentContent
+    ? `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📄 CURRENT DOCUMENT CONTENT:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${documentContent}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`
+    : ''
+
   const contextSection = referenceContext
-    ? `\n\nReference Context (use this information to help answer the question or generate content):\n${referenceContext}\n`
+    ? `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📚 REFERENCE MATERIAL (FOR CONTEXT ONLY - DO NOT MODIFY THIS):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${referenceContext}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`
     : ''
 
   const languageInstruction = language
-    ? `\nIMPORTANT: You MUST respond in ${language}.\n`
+    ? `${language}`
+    : documentContent
+    ? 'the SAME language as the document content'
     : referenceContext
-    ? '\nIMPORTANT: Detect the language used in the Reference Context and respond in the SAME language. If the reference is in Swedish, respond in Swedish. If in English, respond in English, etc.\n'
-    : ''
+    ? 'the SAME language as the reference material'
+    : 'a clear, professional manner'
 
   return `You are a professional writing assistant helping with document creation and content generation.
-${languageInstruction}${contextSection}
-
-User Request:
+${documentSection}${contextSection}
+📝 USER REQUEST:
 ${instruction}
 
-Instructions:
-1. ${language ? `Respond in ${language}` : referenceContext ? 'CRITICAL: Use the SAME language as the Reference Context. Match the language of the reference material exactly.' : 'Respond in a clear, professional manner'}
-2. Use the reference context (if provided) to inform your response
-3. If the user asks you to create content (like a letter, email, or document), generate complete, professional content
-4. Be helpful and thorough in your response
-5. Keep a professional tone
-6. Return ONLY the requested content or answer, without additional commentary
-7. Always check reference context for relevant information before answering
+🔴 YOUR TASK:
+${language ? `Respond in ${language}.` : documentContent ? 'Respond in the SAME language as the document content.' : 'Respond appropriately to the request.'}
 
-Response:`
+📋 INSTRUCTIONS:
+1. ${documentContent ? 'Modify/work with the DOCUMENT CONTENT above based on the user request' : 'Generate new content based on the user request'}
+2. Reference material (if provided) is ONLY for context - NEVER modify or include it in your response
+3. Common requests:
+   - "Make it shorter" / "gör den kortare": ${documentContent ? 'Shorten the DOCUMENT CONTENT by 30-50%' : 'Generate shorter content'}
+   - "Make it longer" / "gör den längre": ${documentContent ? 'Expand the DOCUMENT CONTENT with more details' : 'Generate longer content'}
+   - "Improve" / "förbättra": ${documentContent ? 'Enhance the DOCUMENT CONTENT' : 'Generate improved content'}
+   - "Write a letter/email": Generate new content using reference material for context
+4. Language: Respond in ${languageInstruction}
+5. Format: Return PLAIN TEXT ONLY - NO HTML tags (<p>, <br>, <div>, etc.), NO markdown formatting
+6. Return ONLY the requested content - NO explanations, NO meta-commentary
+7. Keep a professional tone unless instructed otherwise
+
+RESPONSE (PLAIN TEXT, NO HTML TAGS):`
 }
 
 // Groq API Configuration
