@@ -1,5 +1,4 @@
 AI Document Customizer 
-(Building right now 🚧)
 
 A smart text-editing SaaS for everyday documents.
 
